@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "993912953809",
+    "firebase_url": "https://ispecs2-default-rtdb.firebaseio.com",
+    "project_id": "ispecs2",
+    "storage_bucket": "ispecs2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:993912953809:android:fdfa6fb8c6dafe0cc39ef0",
+        "android_client_info": {
+          "package_name": "com.ispecs.child"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMivO-9KwwcIiavGX0lHqRdqUhhQIXnA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:993912953809:android:345dbc4f1f7159a1c39ef0",
+        "android_client_info": {
+          "package_name": "com.ispecs.parent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMivO-9KwwcIiavGX0lHqRdqUhhQIXnA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
