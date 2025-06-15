@@ -20,6 +20,70 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
+                android:background="@color/gray_bg" />
+
+            <!-- Child Name Section -->
+            <RelativeLayout
+                android:id="@+id/layoutChildName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="10dp"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <FrameLayout
+                    android:id="@+id/child_name_icon"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/circle_bg">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="10dp"
+                        android:src="@drawable/smartphone" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/child_name_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Child Name"
+                    android:textColor="@color/black"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@id/child_name_icon" />
+
+                <TextView
+                    android:id="@+id/textViewChildName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="---"
+                    android:textColor="@color/primary"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/roboto_medium"
+                    android:layout_below="@id/child_name_title"
+                    android:layout_toRightOf="@id/child_name_icon"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp" />
+
+                <ImageView
+                    android:id="@+id/right_arrow_child_name"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/chevron" />
+            </RelativeLayout>
+
+            <!-- Your original layout resumes here with all views like textViewBlurIntensity, muteSwitch, etc. -->
+            <!-- Paste all your previously working setting RelativeLayouts below this comment. -->
+             <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
                 android:background="@color/gray_bg"/>
 
             <RelativeLayout
@@ -79,13 +143,6 @@
                     android:src="@drawable/chevron" />
 
             </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
-
             <RelativeLayout
                 android:id="@+id/layoutChildPasscode"
                 android:layout_width="match_parent"
@@ -144,13 +201,6 @@
                     android:src="@drawable/chevron" />
 
             </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
-
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -483,9 +533,7 @@
 
 
             </RelativeLayout>
-
         </LinearLayout>
-
     </ScrollView>
 
 </LinearLayout>

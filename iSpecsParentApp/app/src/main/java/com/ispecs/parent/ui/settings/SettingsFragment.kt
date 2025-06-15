@@ -1,3 +1,5 @@
+// Updated SettingsFragment.kt to support child selection and settings management from Children node
+
 package com.ispecs.parent.ui.settings
 
 import android.app.AlertDialog
@@ -5,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -16,7 +19,6 @@ import showUpdateDialog
 class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
-    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
 
     private val settingsViewModel: SettingsViewModel by viewModels {
@@ -28,11 +30,18 @@ class SettingsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the merged layout which includes both ISpecs and settings UI
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // --- ISpecs UI Section ---
+        settingsViewModel.loadChildrenList { childList ->
+            if (childList.isNotEmpty()) {
+                showChildSelectionDialog(childList)
+            }
+        }
+
+        settingsViewModel.childName.observe(viewLifecycleOwner) {
+            binding.textViewChildName.text = it
+        }
 
         binding.setBlurIntensityLayout.setOnClickListener {
             showUpdateDialog(
@@ -42,7 +51,7 @@ class SettingsFragment : Fragment() {
                 10,
                 100
             ) { newValue ->
-                settingsViewModel.updateBlurIntensity(newValue)
+                settingsViewModel.updateChildSetting("blur_intensity", newValue)
             }
         }
 
@@ -54,7 +63,7 @@ class SettingsFragment : Fragment() {
                 1,
                 20
             ) { newValue ->
-                settingsViewModel.updateBlurDelay(newValue)
+                settingsViewModel.updateChildSetting("blur_delay", newValue)
             }
         }
 
@@ -66,49 +75,60 @@ class SettingsFragment : Fragment() {
                 1,
                 20
             ) { newValue ->
-                settingsViewModel.updateFadeIn(newValue)
+                settingsViewModel.updateChildSetting("fade_in", newValue)
             }
         }
 
-        // Observe ISpecs-related LiveData
-        settingsViewModel.blurIntensity.observe(viewLifecycleOwner) { intensity ->
-            binding.textViewBlurIntensity.text = "$intensity%"
+        settingsViewModel.blurIntensity.observe(viewLifecycleOwner) {
+            binding.textViewBlurIntensity.text = "$it%"
         }
-        settingsViewModel.blurDelay.observe(viewLifecycleOwner) { delay ->
-            binding.textViewBlurDelay.text = "$delay s"
+
+        settingsViewModel.blurDelay.observe(viewLifecycleOwner) {
+            binding.textViewBlurDelay.text = "$it s"
         }
-        settingsViewModel.fadeIn.observe(viewLifecycleOwner) { fade ->
-            binding.textViewFadeIn.text = "$fade s"
+
+        settingsViewModel.fadeIn.observe(viewLifecycleOwner) {
+            binding.textViewFadeIn.text = "$it s"
         }
-        settingsViewModel.mute.observe(viewLifecycleOwner) { mute ->
-            binding.muteSwitch.isChecked = mute
+
+        settingsViewModel.mute.observe(viewLifecycleOwner) {
+            binding.muteSwitch.isChecked = it
         }
+
         binding.muteSwitch.setOnCheckedChangeListener { _, isChecked ->
-            settingsViewModel.setMute(isChecked)
+            settingsViewModel.updateChildSetting("mute", isChecked)
         }
 
-        // --- Settings UI Section ---
-
-        // Display the parent ID (loaded from SharedPreferences)
-        settingsViewModel.parentId.observe(viewLifecycleOwner) { id ->
-            binding.parentIDTextView.text = id
-        }
-        // Display the child passcode
-        settingsViewModel.passcode.observe(viewLifecycleOwner) { code ->
-            binding.textViewChildPasscode.text = code
+        settingsViewModel.parentId.observe(viewLifecycleOwner) {
+            binding.parentIDTextView.text = it
         }
 
-        // Logout click listener
+        settingsViewModel.passcode.observe(viewLifecycleOwner) {
+            binding.textViewChildPasscode.text = it
+        }
+
         binding.logoutText.setOnClickListener {
             settingsViewModel.onLogoutClick()
         }
 
-        // Update passcode dialog
         binding.layoutChildPasscode.setOnClickListener {
             showUpdatePasscodeDialog()
         }
 
         return root
+    }
+
+    private fun showChildSelectionDialog(children: List<Pair<String, String>>) {
+        val childNames = children.map { it.second }
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, childNames)
+        AlertDialog.Builder(requireContext())
+            .setTitle("Select Child")
+            .setAdapter(adapter) { _, which ->
+                val selectedChildId = children[which].first
+                settingsViewModel.loadSelectedChild(selectedChildId)
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun showUpdatePasscodeDialog() {
@@ -120,7 +140,7 @@ class SettingsFragment : Fragment() {
             .setView(dialogView)
             .setPositiveButton("Update") { _, _ ->
                 val newPasscode = editText.text.toString()
-                settingsViewModel.updatePasscode(newPasscode)
+                settingsViewModel.updateChildSetting("passcode", newPasscode)
             }
             .setNegativeButton("Cancel", null)
             .show()

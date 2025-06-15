@@ -1,3 +1,5 @@
+// Updated SettingsViewModel.kt to support per-child settings from Children node
+
 package com.ispecs.parent.ui.settings
 
 import android.app.Application
@@ -7,17 +9,15 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.ispecs.parent.SplashActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.ispecs.parent.SplashActivity
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Firebase references
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
 
-    // ISpecs-related LiveData
     private val _blurIntensity = MutableLiveData<Int>()
     val blurIntensity: LiveData<Int> = _blurIntensity
 
@@ -30,122 +30,83 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _mute = MutableLiveData<Boolean>()
     val mute: LiveData<Boolean> = _mute
 
-    // Settings-related LiveData
     private val _parentId = MutableLiveData<String>()
     val parentId: LiveData<String> = _parentId
 
     private val _passcode = MutableLiveData<String>()
     val passcode: LiveData<String> = _passcode
 
+    private val _childName = MutableLiveData<String>()
+    val childName: LiveData<String> = _childName
+
+    private var selectedChildId: String? = null
+
     init {
-        // Load parent ID from SharedPreferences
         val sharedPreferences = getApplication<Application>()
             .getSharedPreferences("MySharedPrefs", Context.MODE_PRIVATE)
         _parentId.value = sharedPreferences.getString("parentId", "") ?: ""
-
-        // Fetch all user data (ISpecs settings & child passcode)
-        fetchUserData()
     }
 
-    private fun fetchUserData() {
-        val user = auth.currentUser
-        if (user != null) {
-            val userId = user.uid
-            database.child("Users").child(userId)
-                .addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        _blurIntensity.value =
-                            snapshot.child("blur_intensity").getValue(Int::class.java) ?: 80
-                        _blurDelay.value =
-                            snapshot.child("blur_delay").getValue(Int::class.java) ?: 2
-                        _fadeIn.value =
-                            snapshot.child("fade_in").getValue(Int::class.java) ?: 5
-                        _mute.value =
-                            snapshot.child("mute").getValue(Boolean::class.java) ?: true
-                        _passcode.value =
-                            snapshot.child("child_passcode").getValue(String::class.java) ?: ""
-                    }
+    fun loadChildrenList(callback: (List<Pair<String, String>>) -> Unit) {
+        val parent = _parentId.value ?: return
+        val childrenRef = database.child("Children")
+            .orderByChild("parent_ids/$parent").equalTo(true)
 
-                    override fun onCancelled(error: DatabaseError) {
-                        // Log or handle error as needed
-                        Log.e("SettingsViewModel", "Failed to fetch user data", error.toException())
-                    }
-                })
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val children = mutableListOf<Pair<String, String>>()
+                for (child in snapshot.children) {
+                    val id = child.key ?: continue
+                    val name = child.child("name").getValue(String::class.java) ?: "Unnamed"
+                    children.add(id to name)
+                }
+                callback(children)
+                // ✅ Remove listener after single call
+                childrenRef.removeEventListener(this)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(emptyList())
+                childrenRef.removeEventListener(this)
+            }
         }
+
+        childrenRef.addValueEventListener(listener)
     }
 
-    // --- ISpecs settings update methods ---
 
-    fun updateBlurIntensity(value: Int) {
-        updateValueInFirebase("blur_intensity", value)
+    fun loadSelectedChild(childId: String) {
+        selectedChildId = childId
+        val childRef = database.child("Children").child(childId)
+        childRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                _childName.value = snapshot.child("name").getValue(String::class.java) ?: ""
+                _blurIntensity.value = snapshot.child("blur_intensity").getValue(Int::class.java) ?: 80
+                _blurDelay.value = snapshot.child("blur_delay").getValue(Int::class.java) ?: 2
+                _fadeIn.value = snapshot.child("fade_in").getValue(Int::class.java) ?: 5
+                _mute.value = snapshot.child("mute").getValue(Boolean::class.java) ?: true
+                _passcode.value = snapshot.child("passcode").getValue(String::class.java) ?: ""
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("SettingsViewModel", "Failed to load child settings", error.toException())
+            }
+        })
     }
 
-    fun updateBlurDelay(value: Int) {
-        updateValueInFirebase("blur_delay", value)
-    }
-
-    fun updateFadeIn(value: Int) {
-        updateValueInFirebase("fade_in", value)
-    }
-
-    fun setMute(isMuted: Boolean) {
-        val user = auth.currentUser
-        if (user != null) {
-            val userId = user.uid
-            database.child("Users").child(userId).child("mute").setValue(isMuted)
-                .addOnSuccessListener {
-                    _mute.value = isMuted
-                }
-                .addOnFailureListener {
-                    // Handle error if needed
-                    Log.e("SettingsViewModel", "Failed to update mute", it)
-                }
-        }
-    }
-
-    private fun updateValueInFirebase(key: String, value: Int) {
-        val user = auth.currentUser
-        if (user != null) {
-            val userId = user.uid
-            database.child("Users").child(userId).child(key).setValue(value)
-                .addOnSuccessListener {
-                    when (key) {
-                        "blur_intensity" -> _blurIntensity.value = value
-                        "blur_delay" -> _blurDelay.value = value
-                        "fade_in" -> _fadeIn.value = value
-                    }
-                }
-                .addOnFailureListener {
-                    Log.e("SettingsViewModel", "Failed to update $key", it)
-                }
-        }
-    }
-
-    // --- Settings (child passcode & logout) methods ---
-
-    fun updatePasscode(newPasscode: String) {
-        val user = auth.currentUser
-        if (user != null) {
-            val userId = user.uid
-            database.child("Users").child(userId).child("child_passcode")
-                .setValue(newPasscode)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        _passcode.value = newPasscode
-                    } else {
-                        Log.e("SettingsViewModel", "Failed to update passcode", task.exception)
-                    }
-                }
-        }
+    fun updateChildSetting(key: String, value: Any) {
+        val childId = selectedChildId ?: return
+        database.child("Children").child(childId).child(key).setValue(value)
+            .addOnFailureListener {
+                Log.e("SettingsViewModel", "Failed to update $key", it)
+            }
     }
 
     fun onLogoutClick() {
-        // Clear SharedPreferences
         val sharedPreferences = getApplication<Application>()
             .getSharedPreferences("MySharedPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
 
-        // Start SplashActivity
         val intent = Intent(getApplication(), SplashActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         getApplication<Application>().startActivity(intent)
