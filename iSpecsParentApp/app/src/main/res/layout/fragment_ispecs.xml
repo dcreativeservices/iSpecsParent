@@ -1,203 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@android:color/white"
     tools:context=".ui.ispecs.iSpecsFragment">
 
-    <RelativeLayout
+    <!-- Top App Bar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:titleTextColor="@android:color/white"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <!-- Logs Tile -->
+    <RelativeLayout
+        android:id="@+id/logsClickableLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginBottom="10dp"
         android:background="@color/gray_bg">
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="20dp"
-        android:id="@+id/screenTimeLayout">
 
         <FrameLayout
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@drawable/circle_bg"
-            android:id="@+id/blur_icon">
+            android:background="@drawable/circle_bg">
 
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/smartphone"
-                android:padding="10dp"/>
-
+                android:padding="10dp" />
         </FrameLayout>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Screen Time"
-            android:textColor="@color/black"
-            android:fontFamily="@font/roboto_medium"
-            android:textSize="20sp"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/blur_icon"
-            android:id="@+id/screen_time_title"
-            />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Set child screen time"
-            android:fontFamily="@font/roboto_regular"
-            android:textSize="16sp"
-            android:layout_marginLeft="10dp"
-            android:textColor="@color/dark_gray"
-            android:layout_toRightOf="@+id/blur_icon"
-            android:layout_below="@+id/screen_time_title"
-            android:layout_marginRight="10dp"
-
-            />
-
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:src="@drawable/chevron"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:id="@+id/right_arrow"/>
-
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray_bg"
-        android:layout_marginLeft="50dp"
-        />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="20dp"
-        android:id="@+id/logsClickableLayout">
-
-        <FrameLayout
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/circle_bg"
-            android:id="@+id/blur_icon2">
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/smartphone"
-                android:padding="10dp"/>
-
-        </FrameLayout>
-
-        <TextView
+            android:id="@+id/logs_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="iSpecs Logs"
             android:textColor="@color/black"
             android:fontFamily="@font/roboto_medium"
             android:textSize="20sp"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/blur_icon2"
-            android:id="@+id/logs_title"
-            />
+            android:layout_marginLeft="70dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="View child glasses logs"
-            android:fontFamily="@font/roboto_regular"
-            android:textSize="16sp"
-            android:layout_marginLeft="10dp"
+            android:layout_below="@id/logs_title"
+            android:layout_marginLeft="70dp"
             android:textColor="@color/dark_gray"
-            android:layout_toRightOf="@+id/blur_icon2"
-            android:layout_below="@+id/logs_title"
-            android:layout_marginRight="10dp"
-
-            />
+            android:textSize="16sp"
+            android:fontFamily="@font/roboto_regular" />
 
         <ImageView
+            android:id="@+id/right_arrow2"
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:src="@drawable/chevron"
             android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:id="@+id/right_arrow2"/>
-
+            android:layout_centerVertical="true" />
     </RelativeLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray_bg"
-        android:layout_marginLeft="50dp"
-        />
-
+    <!-- Child App Status Tile -->
     <RelativeLayout
+        android:id="@+id/childAppStatusLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:padding="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="20dp">
+        android:layout_marginBottom="10dp"
+        android:background="@color/gray_bg">
 
         <FrameLayout
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@drawable/circle_bg"
-            android:id="@+id/blur_icon3">
+            android:background="@drawable/circle_bg">
 
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/glasses_icon"
-                android:padding="10dp"/>
-
+                android:padding="10dp" />
         </FrameLayout>
 
         <TextView
+            android:id="@+id/child_app_status_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Child App Status"
             android:textColor="@color/black"
             android:fontFamily="@font/roboto_medium"
             android:textSize="20sp"
-            android:layout_marginLeft="10dp"
-            android:layout_toRightOf="@+id/blur_icon3"
-            android:id="@+id/child_app_status_title"
-            />
+            android:layout_marginLeft="70dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Inactive"
-            android:fontFamily="@font/roboto_medium"
+            android:text="View active status of each child"
+            android:layout_below="@id/child_app_status_title"
+            android:layout_marginLeft="70dp"
+            android:textColor="@color/dark_gray"
             android:textSize="16sp"
-            android:id="@+id/textViewChildAppStatus"
-            android:layout_marginLeft="10dp"
-            android:textColor="@color/red"
-            android:layout_toRightOf="@+id/blur_icon3"
-            android:layout_below="@+id/child_app_status_title"
-            android:layout_marginRight="10dp"
+            android:fontFamily="@font/roboto_regular" />
 
-            />
-
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@drawable/chevron"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true" />
     </RelativeLayout>
 
+    <!-- Register Child -->
+    <RelativeLayout
+        android:id="@+id/registerChildLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/gray_bg">
 
+        <FrameLayout
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/circle_bg">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/smartphone"
+                android:padding="10dp" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/register_child_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Register Child"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:fontFamily="@font/roboto_medium"
+            android:layout_marginLeft="70dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add new child to monitor"
+            android:layout_below="@id/register_child_title"
+            android:layout_marginLeft="70dp"
+            android:textColor="@color/dark_gray"
+            android:textSize="16sp"
+            android:fontFamily="@font/roboto_regular" />
+
+        <ImageView
+            android:id="@+id/right_arrow_register_child"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@drawable/chevron"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
 </LinearLayout>

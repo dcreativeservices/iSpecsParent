@@ -15,6 +15,16 @@
         android:theme="@style/Theme.ISpecsParentApp"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
+        <!-- ✅ New: Child Registration Activity -->
+        <activity
+            android:name=".ChildRegistrationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+			
+	<activity android:name=".ui.ispecs.ChildStatusListActivity" />
+
+        <!-- Other existing activities -->
         <activity
             android:name=".LogsBriefActivity"
             android:exported="false" />
@@ -37,7 +47,6 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -55,5 +64,4 @@
             android:exported="false"
             android:screenOrientation="portrait" />
     </application>
-
 </manifest>
