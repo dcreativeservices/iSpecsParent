@@ -1,0 +1,11 @@
+<!-- res/values/styles.xml -->
+<resources>
+
+    <!-- Your existing app theme and styles -->
+
+    <!-- ✅ Add this style -->
+    <style name="CustomDialogStyle" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+</resources>

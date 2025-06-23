@@ -17,11 +17,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:background="@color/gray_bg" />
-
             <!-- Child Name Section -->
             <RelativeLayout
                 android:id="@+id/layoutChildName"
@@ -78,13 +73,11 @@
                     android:layout_centerVertical="true"
                     android:src="@drawable/chevron" />
             </RelativeLayout>
-
-            <!-- Your original layout resumes here with all views like textViewBlurIntensity, muteSwitch, etc. -->
-            <!-- Paste all your previously working setting RelativeLayouts below this comment. -->
-             <RelativeLayout
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:background="@color/gray_bg"/>
+                android:layout_height="1dp"
+                android:layout_marginLeft="50dp"
+                android:background="@color/gray_bg" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -201,6 +194,12 @@
                     android:src="@drawable/chevron" />
 
             </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginLeft="50dp"
+                android:background="@color/gray_bg" />
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -255,6 +254,7 @@
                 android:layout_height="1dp"
                 android:layout_marginLeft="50dp"
                 android:background="@color/gray_bg" />
+
 
             <RelativeLayout
                 android:id="@+id/setBlurIntensityLayout"

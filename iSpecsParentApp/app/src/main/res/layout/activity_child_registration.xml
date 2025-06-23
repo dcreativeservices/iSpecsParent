@@ -1,75 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@color/gray_bg"
+    tools:context=".ChildRegistrationActivity">
 
+    <!-- Toolbar - ID kept as "toolbar" from your working Material version -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:titleTextColor="@android:color/white" />
+        app:title="Register Child"
+        app:titleTextColor="@android:color/white"
+        android:layout_alignParentTop="true"/>
 
-
-    <!-- ✅ Content Area in ScrollView -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_below="@id/toolbar"
+        android:layout_above="@+id/btnRegisterChildContainer">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
 
-            <com.google.android.material.textfield.TextInputLayout
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="iSpecs Child Setup"
+                android:textColor="@color/primary"
+                android:textSize="20sp"
+                android:fontFamily="@font/roboto_medium"
+                android:layout_marginStart="6dp"
+            android:layout_marginBottom="30dp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Child Name">
-                <com.google.android.material.textfield.TextInputEditText
+                android:orientation="vertical"
+                android:minWidth="300dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Child Name"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/roboto_regular" />
+                <EditText
                     android:id="@+id/etChildName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/rounded_edittext"
+                    android:hint="Enter child's name"
+                    android:inputType="textPersonName"
+                    android:imeOptions="actionNext"
+                    android:padding="10dp"
+                    android:textSize="16sp"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/roboto_regular"
                     android:maxLength="30" />
-            </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Child Passcode"
-                android:layout_marginTop="16dp">
-                <com.google.android.material.textfield.TextInputEditText
+                android:orientation="vertical"
+                android:minWidth="300dp"
+                android:layout_marginTop="20dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Child Passcode (4 digits)"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/roboto_regular" />
+                <EditText
                     android:id="@+id/etChildPasscode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/rounded_edittext"
+                    android:hint="Enter 4-digit passcode"
                     android:inputType="numberPassword"
+                    android:imeOptions="actionNext"
+                    android:padding="10dp"
+                    android:textSize="16sp"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/roboto_regular"
                     android:maxLength="4" />
-            </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="MAC Address"
-                android:layout_marginTop="16dp">
-                <com.google.android.material.textfield.TextInputEditText
+                android:orientation="vertical"
+                android:minWidth="300dp"
+                android:layout_marginTop="20dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MAC Address"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/roboto_regular" />
+                <EditText
                     android:id="@+id/etMacAddress"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/rounded_edittext"
+                    android:hint="Enter MAC address (XX:XX:XX:XX:XX:XX)"
+                    android:inputType="textNoSuggestions"
+                    android:imeOptions="actionDone"
+                    android:padding="10dp"
+                    android:textSize="16sp"
+                    android:layout_marginTop="10dp"
+                    android:maxLength="17"
+                    android:fontFamily="@font/roboto_regular"/>
+            </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRegisterChild"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Register Child"
-                android:layout_marginTop="24dp"
-                android:backgroundTint="@color/primary"
-                android:textColor="@color/white" />
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/btnRegisterChildContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:paddingStart="50dp"
+        android:paddingEnd="50dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="50dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btnRegisterChild"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button"
+            android:fontFamily="@font/roboto_regular"
+            android:text="Register Child"
+            android:minWidth="300dp"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/primary"
+            />
+    </LinearLayout>
+
+</RelativeLayout>

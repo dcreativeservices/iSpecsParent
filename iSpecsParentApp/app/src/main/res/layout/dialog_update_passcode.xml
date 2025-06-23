@@ -9,7 +9,8 @@
         android:id="@+id/editTextPasscode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="number"
-        android:hint="Enter new passcode" />
+        android:inputType="numberPassword"
+        android:maxLength="4"
+        android:hint="Enter 4-digit passcode" />
 
 </LinearLayout>
