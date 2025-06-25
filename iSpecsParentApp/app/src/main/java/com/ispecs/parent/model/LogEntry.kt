@@ -7,7 +7,7 @@ data class LogEntry(
     val battery: Int,
     val status: Int,
     val time: String?,
-    val additionalData: Map<String, Any?> // New field to hold all other values
+    val additionalData: Map<String, Any?>
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
@@ -15,10 +15,10 @@ data class LogEntry(
         parcel.readString(),
         mutableMapOf<String, Any?>().apply {
             val size = parcel.readInt()
-            for (i in 0 until size) {
+            repeat(size) {
                 val key = parcel.readString()
                 val value = parcel.readValue(Any::class.java.classLoader)
-                key?.let { put(it, value) }
+                if (key != null) put(key, value)
             }
         }
     )
@@ -34,19 +34,10 @@ data class LogEntry(
         }
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     companion object CREATOR : Parcelable.Creator<LogEntry> {
-        override fun createFromParcel(parcel: Parcel): LogEntry {
-            return LogEntry(parcel)
-        }
-
-        override fun newArray(size: Int): Array<LogEntry?> {
-            return arrayOfNulls(size)
-        }
+        override fun createFromParcel(parcel: Parcel) = LogEntry(parcel)
+        override fun newArray(size: Int): Array<LogEntry?> = arrayOfNulls(size)
     }
 }
-
-

@@ -28,6 +28,9 @@
         <activity
             android:name=".LogsBriefActivity"
             android:exported="false" />
+		<activity
+            android:name=".DailyLogActivity"
+            android:exported="false"/>
         <activity
             android:name=".RawLogsActivity"
             android:exported="false" />
