@@ -2,7 +2,7 @@ package com.ispecs.parent
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +20,11 @@ class DailyLogActivity : AppCompatActivity() {
     private val logList = mutableListOf<DailyLogEntry>()
     private lateinit var adapter: LogsTableAdapter
 
+    private var startDate: String = ""
+    private var endDate: String = ""
+
+    private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDailyLogBinding.inflate(layoutInflater)
@@ -29,111 +34,164 @@ class DailyLogActivity : AppCompatActivity() {
         binding.logsTableRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.logsTableRecyclerView.adapter = adapter
 
-        val today = Calendar.getInstance()
-        val todayString = "%04d-%02d-%02d".format(
-            today.get(Calendar.YEAR),
-            today.get(Calendar.MONTH) + 1,
-            today.get(Calendar.DAY_OF_MONTH)
-        )
-        binding.textViewSelectedDate.text = todayString
-        loadLogsForDate(todayString)
+        setDefaultRange()
+        setupQuickFilters()
+        setupRangeClick()
+    }
 
-        binding.textViewSelectedDate.setOnClickListener {
-            showDatePicker()
+    private fun setDefaultRange() {
+        val cal = Calendar.getInstance()
+        endDate = dateFormatter.format(cal.time)
+        cal.add(Calendar.DAY_OF_MONTH, -30)
+        startDate = dateFormatter.format(cal.time)
+        updateDateRangeText()
+        loadLogs(startDate, endDate)
+    }
+
+    private fun setupQuickFilters() {
+        findViewById<TextView>(R.id.last7).setOnClickListener {
+            setRangeByDays(7)
+        }
+        findViewById<TextView>(R.id.last30).setOnClickListener {
+            setRangeByDays(30)
+        }
+        findViewById<TextView>(R.id.prevYear).setOnClickListener {
+            val fyStart = "${Calendar.getInstance().get(Calendar.YEAR) - 1}-04-01"
+            val fyEnd = "${Calendar.getInstance().get(Calendar.YEAR)}-03-31"
+            startDate = fyStart
+            endDate = fyEnd
+            updateDateRangeText()
+            loadLogs(startDate, endDate)
+        }
+        findViewById<TextView>(R.id.currYear).setOnClickListener {
+            val fyStart = "${Calendar.getInstance().get(Calendar.YEAR)}-04-01"
+            val fyEnd = dateFormatter.format(Date())
+            startDate = fyStart
+            endDate = fyEnd
+            updateDateRangeText()
+            loadLogs(startDate, endDate)
         }
     }
 
-    private fun showDatePicker() {
-        val calendar = Calendar.getInstance()
-        DatePickerDialog(this, { _, year, month, day ->
-            val date = "%04d-%02d-%02d".format(year, month + 1, day)
-            binding.textViewSelectedDate.text = date
-            loadLogsForDate(date)
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+    private fun setRangeByDays(days: Int) {
+        val cal = Calendar.getInstance()
+        endDate = dateFormatter.format(cal.time)
+        cal.add(Calendar.DAY_OF_MONTH, -days)
+        startDate = dateFormatter.format(cal.time)
+        updateDateRangeText()
+        loadLogs(startDate, endDate)
     }
 
-    private fun loadLogsForDate(date: String) {
+    private fun setupRangeClick() {
+        binding.textViewDateRange.setOnClickListener {
+            showCustomRangeDialog()
+        }
+    }
+
+    private fun showCustomRangeDialog() {
+        val cal = Calendar.getInstance()
+
+        DatePickerDialog(this, { _, year, month, dayOfMonth ->
+            val fromCal = Calendar.getInstance()
+            fromCal.set(year, month, dayOfMonth)
+            startDate = dateFormatter.format(fromCal.time)
+
+            DatePickerDialog(this, { _, toYear, toMonth, toDay ->
+                val toCal = Calendar.getInstance()
+                toCal.set(toYear, toMonth, toDay)
+                endDate = dateFormatter.format(toCal.time)
+
+                updateDateRangeText()
+                loadLogs(startDate, endDate)
+
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+
+        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+    }
+
+    private fun updateDateRangeText() {
+        binding.textViewDateRange.text = "$startDate — $endDate"
+    }
+
+    private fun loadLogs(start: String, end: String) {
         val sharedPrefs = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
-        val parentId = sharedPrefs.getString("parentId", null)
+        val parentId = sharedPrefs.getString("parentId", null) ?: return
 
-        if (parentId.isNullOrEmpty()) {
-            Toast.makeText(this, "Parent ID not found", Toast.LENGTH_SHORT).show()
-            return
+        val cal = Calendar.getInstance()
+        val startDateObj = dateFormatter.parse(start) ?: return
+        val endDateObj = dateFormatter.parse(end) ?: return
+
+        cal.time = startDateObj
+        val datesToFetch = mutableListOf<String>()
+        while (!cal.time.after(endDateObj)) {
+            datesToFetch.add(dateFormatter.format(cal.time))
+            cal.add(Calendar.DATE, 1)
         }
 
-        val dbRef = FirebaseDatabase.getInstance().getReference("logs").child(parentId).child(date)
         logList.clear()
+        var fetchedDays = 0
+        var totalActive = 0L
+        var totalInactive = 0L
 
-        dbRef.get().addOnSuccessListener { snapshot ->
-            val rawLogs = mutableListOf<LogEntry>()
+        for (date in datesToFetch) {
+            val dbRef = FirebaseDatabase.getInstance().getReference("logs").child(parentId).child(date)
+            dbRef.get().addOnSuccessListener { snapshot ->
+                val rawLogs = mutableListOf<LogEntry>()
 
-            for (child in snapshot.children) {
-                val time = child.child("uploaded_at").getValue(String::class.java) ?: continue
-                val status = child.child("status").getValue(Int::class.java) ?: 0
-                val battery = child.child("battery").getValue(Int::class.java) ?: -1
-                rawLogs.add(LogEntry(battery, status, time, emptyMap()))
-            }
-
-            val dateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-            rawLogs.sortBy { log -> dateFormat.parse(log.time ?: "00:00:00") }
-
-            // ✅ Merge consecutive logs
-            val merged = mutableListOf<DailyLogEntry>()
-            var startTime: String? = null
-            var prevStatus: Int? = null
-
-            var totalActiveMillis = 0L
-            var totalInactiveMillis = 0L
-
-            for (i in rawLogs.indices) {
-                val current = rawLogs[i]
-                val currentStatus = if (current.status == 1) "Active" else "Inactive"
-                val currentTime = current.time ?: continue
-
-                if (startTime == null) {
-                    startTime = currentTime
-                    prevStatus = current.status
-                    continue
+                for (child in snapshot.children) {
+                    val time = child.child("uploaded_at").getValue(String::class.java) ?: continue
+                    val status = child.child("status").getValue(Int::class.java) ?: 0
+                    val battery = child.child("battery").getValue(Int::class.java) ?: -1
+                    rawLogs.add(LogEntry(battery, status, time, emptyMap()))
                 }
 
-                val isSameGroup = (prevStatus == current.status) ||
-                        (prevStatus != 1 && current.status != 1)
+                val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                rawLogs.sortBy { it.time?.let { t -> format.parse(t) } }
 
-                if (!isSameGroup || i == rawLogs.lastIndex) {
-                    val endTime = currentTime
-                    val df = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-                    val startDate = df.parse(startTime) ?: continue
-                    val endDate = df.parse(endTime) ?: startDate
-                    val durationMillis = endDate.time - startDate.time
-                    val duration = formatDuration(durationMillis)
+                var prevStatus: Int? = null
+                var startTime: String? = null
+                for (i in rawLogs.indices) {
+                    val curr = rawLogs[i]
+                    val currStatus = curr.status
+                    val currTime = curr.time ?: continue
 
-                    val statusLabel = if (prevStatus == 1) "Active" else "Inactive"
-                    merged.add(DailyLogEntry(startTime, endTime, duration, statusLabel))
+                    if (startTime == null) {
+                        startTime = currTime
+                        prevStatus = currStatus
+                        continue
+                    }
 
-                    if (statusLabel == "Active") totalActiveMillis += durationMillis
-                    else totalInactiveMillis += durationMillis
+                    val sameGroup = (prevStatus == currStatus) || (prevStatus != 1 && currStatus != 1)
 
-                    startTime = currentTime
-                    prevStatus = current.status
+                    if (!sameGroup || i == rawLogs.lastIndex) {
+                        val endTime = currTime
+                        val df = format
+                        val startDate = df.parse(startTime) ?: continue
+                        val endDate = df.parse(endTime) ?: startDate
+                        val durationMillis = endDate.time - startDate.time
+
+                        val label = if (prevStatus == 1) "Active" else "Inactive"
+                        logList.add(DailyLogEntry(startTime, endTime, formatDuration(durationMillis), label))
+
+                        if (label == "Active") totalActive += durationMillis else totalInactive += durationMillis
+
+                        startTime = currTime
+                        prevStatus = currStatus
+                    }
+                }
+
+                fetchedDays++
+                if (fetchedDays == datesToFetch.size) {
+                    adapter.notifyDataSetChanged()
+                    binding.textViewSummary.text = "Active: ${formatDuration(totalActive)} | Inactive: ${formatDuration(totalInactive)}"
                 }
             }
-
-            logList.clear()
-            logList.addAll(merged)
-            adapter.notifyDataSetChanged()
-
-            val summary = "Active: ${formatDuration(totalActiveMillis)} | Inactive: ${formatDuration(totalInactiveMillis)}"
-            binding.textViewSummary.text = summary
-
-        }.addOnFailureListener {
-            Toast.makeText(this, "Failed to load logs", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun formatDuration(millis: Long): String {
-        val seconds = millis / 1000
-        val minutes = seconds / 60
-        val remainingSeconds = seconds % 60
-        return if (minutes > 0) "${minutes}m ${remainingSeconds}s" else "${remainingSeconds}s"
+        val minutes = millis / 1000 / 60
+        val seconds = (millis / 1000) % 60
+        return "${minutes}m ${seconds}s"
     }
 }

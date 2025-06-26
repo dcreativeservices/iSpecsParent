@@ -7,18 +7,80 @@
     android:padding="16dp"
     android:background="@color/white">
 
-    <!-- Date Picker -->
+    <!-- Date Range Display -->
     <TextView
-        android:id="@+id/textViewSelectedDate"
-        android:layout_width="wrap_content"
+        android:id="@+id/textViewDateRange"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Date"
-        android:textSize="18sp"
+        android:text="2025-06-01 — 2025-06-30"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:background="@drawable/date_range_background"
+        android:padding="12dp"
+        android:layout_marginBottom="8dp"
         android:drawableEnd="@drawable/ic_calendar"
-        android:padding="8dp"
         android:drawablePadding="8dp"
-        android:textColor="@color/primary"
-        android:layout_gravity="center_horizontal" />
+        android:clickable="true"
+        android:focusable="true" />
+
+    <!-- Quick Filters -->
+    <LinearLayout
+        android:id="@+id/quickFiltersLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp"
+        android:gravity="center"
+        android:weightSum="4">
+
+        <TextView
+            android:id="@+id/last7"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Last 7 Days"
+            android:padding="10dp"
+            android:background="@drawable/filter_chip_background"
+            android:textColor="@color/primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/last30"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Last 30 Days"
+            android:padding="10dp"
+            android:background="@drawable/filter_chip_background"
+            android:textColor="@color/primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/prevYear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Prev Year"
+            android:padding="10dp"
+            android:background="@drawable/filter_chip_background"
+            android:textColor="@color/primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/currYear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Curr Year"
+            android:padding="10dp"
+            android:background="@drawable/filter_chip_background"
+            android:textColor="@color/primary"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <!-- Table Header -->
     <LinearLayout
@@ -27,8 +89,8 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingVertical="8dp"
-        android:layout_marginTop="16dp"
-        android:background="#EEEEEE">
+        android:background="#EEEEEE"
+        android:layout_marginTop="8dp">
 
         <TextView
             android:layout_width="0dp"
@@ -86,6 +148,5 @@
         android:padding="8dp"
         android:layout_marginTop="12dp"
         android:background="#EEEEEE" />
-
 
 </LinearLayout>

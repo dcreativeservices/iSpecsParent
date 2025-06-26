@@ -8,4 +8,18 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
+    <style name="QuickRangeStyle">
+        <item name="android:layout_marginHorizontal">4dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:padding">6dp</item>
+        <item name="android:textColor">#0057D9</item>
+    </style>
+
+    <style name="TableHeader">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+
 </resources>
