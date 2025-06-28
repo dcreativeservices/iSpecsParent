@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.ispecs.parent.ChildRegistrationActivity
 import com.ispecs.parent.DailyLogActivity
+import com.ispecs.parent.LogsBriefActivity
 import com.ispecs.parent.LogsListActivity
 import com.ispecs.parent.R
 import com.ispecs.parent.databinding.FragmentIspecsBinding
@@ -31,7 +32,7 @@ class iSpecsFragment : Fragment() {
 
         // 👉 Logs click
         binding.logsClickableLayout.setOnClickListener {
-            startActivity(Intent(requireContext(), DailyLogActivity::class.java))
+            startActivity(Intent(requireContext(), LogsBriefActivity::class.java))
         }
 
         // 👉 Child App Status click

@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -14,67 +12,145 @@
         app:titleTextColor="@color/white"
         android:elevation="4dp"/>
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_below="@+id/toolbar"
-        android:layout_marginBottom="10dp"
-        android:gravity="center">
+        android:layout_below="@id/toolbar">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="150dp"
-            android:src="@drawable/ispecs"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="100dp"
-            android:id="@+id/glasses_image"
-            android:layout_marginBottom="20dp"/>
-
-        <!-- Header for Total ON Duration -->
-        <TextView
-            android:id="@+id/totalOnTime"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:text="Total time glasses were on: 00:00"
-            android:textSize="20sp"
-            android:fontFamily="@font/roboto_regular"
+            android:orientation="vertical"
             android:gravity="center"
-            android:textColor="@color/black"/>
+            android:padding="16dp">
+
+            <!-- Date Range -->
+            <TextView
+                android:id="@+id/textViewDateRange"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2025-06-01 — 2025-06-30"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:background="@drawable/date_range_background"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp"
+                android:drawableEnd="@drawable/ic_calendar"
+                android:drawablePadding="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- Quick Filters -->
+            <LinearLayout
+                android:id="@+id/quickFiltersLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
+                android:gravity="center"
+                android:weightSum="4">
+
+                <TextView
+                    android:id="@+id/last7"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Last 7 Days"
+                    android:padding="10dp"
+                    android:background="@drawable/filter_chip_background"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/last30"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Last 30 Days"
+                    android:padding="10dp"
+                    android:background="@drawable/filter_chip_background"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/prevYear"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Prev Year"
+                    android:padding="10dp"
+                    android:background="@drawable/filter_chip_background"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/currYear"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Curr Year"
+                    android:padding="10dp"
+                    android:background="@drawable/filter_chip_background"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- ImageView -->
+            <ImageView
+                android:id="@+id/glasses_image"
+                android:layout_width="wrap_content"
+                android:layout_height="150dp"
+                android:src="@drawable/ispecs"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Header for Total ON Duration -->
+            <TextView
+                android:id="@+id/totalOnTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="Total time glasses were on: 00:00"
+                android:textSize="20sp"
+                android:fontFamily="@font/roboto_regular"
+                android:gravity="center"
+                android:textColor="@color/black"/>
+
+            <!-- Buttons -->
+            <Button
+                android:id="@+id/viewDetailedLogsBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Detailed Logs"
+                android:textAllCaps="false"
+                android:minWidth="200dp"
+                android:layout_marginTop="20dp" />
+
+            <Button
+                android:id="@+id/viewBatteryLogsBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Battery Logs"
+                android:textAllCaps="false"
+                android:minWidth="200dp"
+                android:padding="5dp"
+                android:layout_marginTop="10dp" />
+
+            <Button
+                android:id="@+id/viewRawLogsBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Raw Logs"
+                android:textAllCaps="false"
+                android:minWidth="200dp"
+                android:padding="5dp"
+                android:layout_marginTop="10dp" />
 
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="View Detailed Logs"
-            android:textAllCaps="false"
-            android:minWidth="200dp"
-            android:layout_marginTop="20dp"
-            android:id="@+id/viewDetailedLogsBtn"
-            />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="View Battery Logs"
-            android:id="@+id/viewBatteryLogsBtn"
-            android:textAllCaps="false"
-            android:minWidth="200dp"
-            android:padding="5dp"
-            android:layout_marginTop="10dp"
-            />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="View Raw Logs"
-            android:minWidth="200dp"
-            android:id="@+id/viewRawLogsBtn"
-            android:padding="5dp"
-            android:textAllCaps="false"
-            android:layout_marginTop="10dp"
-            />
-    </LinearLayout>
-
+        </LinearLayout>
+    </ScrollView>
 </RelativeLayout>

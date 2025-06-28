@@ -1,7 +1,9 @@
 package com.ispecs.parent
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -34,7 +36,17 @@ class DailyLogActivity : AppCompatActivity() {
         binding.logsTableRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.logsTableRecyclerView.adapter = adapter
 
-        setDefaultRange()
+        // Check if date range was passed from LogsBriefActivity
+        startDate = intent.getStringExtra("startDate") ?: ""
+        endDate = intent.getStringExtra("endDate") ?: ""
+
+        if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
+            updateDateRangeText()
+            loadLogs(startDate, endDate)
+        } else {
+            setDefaultRange()
+        }
+
         setupQuickFilters()
         setupRangeClick()
     }
@@ -90,7 +102,6 @@ class DailyLogActivity : AppCompatActivity() {
 
     private fun showCustomRangeDialog() {
         val cal = Calendar.getInstance()
-
         DatePickerDialog(this, { _, year, month, dayOfMonth ->
             val fromCal = Calendar.getInstance()
             fromCal.set(year, month, dayOfMonth)
@@ -116,6 +127,8 @@ class DailyLogActivity : AppCompatActivity() {
     private fun loadLogs(start: String, end: String) {
         val sharedPrefs = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
         val parentId = sharedPrefs.getString("parentId", null) ?: return
+
+        binding.progressBar.visibility = View.VISIBLE
 
         val cal = Calendar.getInstance()
         val startDateObj = dateFormatter.parse(start) ?: return
@@ -165,9 +178,8 @@ class DailyLogActivity : AppCompatActivity() {
 
                     if (!sameGroup || i == rawLogs.lastIndex) {
                         val endTime = currTime
-                        val df = format
-                        val startDate = df.parse(startTime) ?: continue
-                        val endDate = df.parse(endTime) ?: startDate
+                        val startDate = format.parse(startTime) ?: continue
+                        val endDate = format.parse(endTime) ?: startDate
                         val durationMillis = endDate.time - startDate.time
 
                         val label = if (prevStatus == 1) "Active" else "Inactive"
@@ -184,6 +196,16 @@ class DailyLogActivity : AppCompatActivity() {
                 if (fetchedDays == datesToFetch.size) {
                     adapter.notifyDataSetChanged()
                     binding.textViewSummary.text = "Active: ${formatDuration(totalActive)} | Inactive: ${formatDuration(totalInactive)}"
+                    binding.progressBar.visibility = View.GONE
+
+                    if (logList.isEmpty()) {
+                        Toast.makeText(this, "No logs found for selected range", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }.addOnFailureListener {
+                fetchedDays++
+                if (fetchedDays == datesToFetch.size) {
+                    binding.progressBar.visibility = View.GONE
                 }
             }
         }
