@@ -96,9 +96,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:text="Date"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Start"
             android:textStyle="bold"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:gravity="center_horizontal" />
 
         <TextView
@@ -107,27 +116,25 @@
             android:layout_weight="1"
             android:text="End"
             android:textStyle="bold"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:gravity="center_horizontal" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Duration"
+            android:text="Dur"
             android:textStyle="bold"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:gravity="center_horizontal" />
 
-        <TextView
+        <ImageView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Status"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:gravity="center_horizontal" />
-
+            android:layout_gravity="center"
+            android:src="@drawable/ic_dot_placeholder"
+            android:contentDescription="status icon" />
     </LinearLayout>
 
     <!-- Table Data -->
@@ -156,7 +163,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone"
-        />
+        android:visibility="gone" />
 
 </LinearLayout>

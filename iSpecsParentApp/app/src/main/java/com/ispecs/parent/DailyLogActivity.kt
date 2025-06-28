@@ -1,7 +1,6 @@
 package com.ispecs.parent
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -36,7 +35,6 @@ class DailyLogActivity : AppCompatActivity() {
         binding.logsTableRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.logsTableRecyclerView.adapter = adapter
 
-        // Check if date range was passed from LogsBriefActivity
         startDate = intent.getStringExtra("startDate") ?: ""
         endDate = intent.getStringExtra("endDate") ?: ""
 
@@ -61,12 +59,8 @@ class DailyLogActivity : AppCompatActivity() {
     }
 
     private fun setupQuickFilters() {
-        findViewById<TextView>(R.id.last7).setOnClickListener {
-            setRangeByDays(7)
-        }
-        findViewById<TextView>(R.id.last30).setOnClickListener {
-            setRangeByDays(30)
-        }
+        findViewById<TextView>(R.id.last7).setOnClickListener { setRangeByDays(7) }
+        findViewById<TextView>(R.id.last30).setOnClickListener { setRangeByDays(30) }
         findViewById<TextView>(R.id.prevYear).setOnClickListener {
             val fyStart = "${Calendar.getInstance().get(Calendar.YEAR) - 1}-04-01"
             val fyEnd = "${Calendar.getInstance().get(Calendar.YEAR)}-03-31"
@@ -114,7 +108,6 @@ class DailyLogActivity : AppCompatActivity() {
 
                 updateDateRangeText()
                 loadLogs(startDate, endDate)
-
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
 
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
@@ -161,38 +154,54 @@ class DailyLogActivity : AppCompatActivity() {
                 val format = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
                 rawLogs.sortBy { it.time?.let { t -> format.parse(t) } }
 
-                var prevStatus: Int? = null
-                var startTime: String? = null
-                for (i in rawLogs.indices) {
-                    val curr = rawLogs[i]
-                    val currStatus = curr.status
-                    val currTime = curr.time ?: continue
+                val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                val merged = mutableListOf<DailyLogEntry>()
 
-                    if (startTime == null) {
-                        startTime = currTime
-                        prevStatus = currStatus
-                        continue
+                var tempStart: String? = null
+                var tempEnd: String? = null
+                var currentLabel: String? = null
+                var groupStartTime: Long? = null
+                var groupEndTime: Long? = null
+
+                for (i in 0 until rawLogs.size - 1) {
+                    val current = rawLogs[i]
+                    val next = rawLogs[i + 1]
+
+                    val startDateTime = dateTimeFormat.parse("$date ${current.time}") ?: continue
+                    val endDateTime = dateTimeFormat.parse("$date ${next.time}") ?: continue
+                    val label = if (current.status == 1) "Active" else "Inactive"
+
+                    if (currentLabel == null) {
+                        currentLabel = label
+                        tempStart = current.time
+                        groupStartTime = startDateTime.time
                     }
 
-                    val sameGroup = (prevStatus == currStatus) || (prevStatus != 1 && currStatus != 1)
+                    if (label == currentLabel) {
+                        tempEnd = next.time
+                        groupEndTime = endDateTime.time
+                    } else {
+                        val totalDuration = (groupEndTime ?: endDateTime.time) - (groupStartTime ?: startDateTime.time)
+                        merged.add(DailyLogEntry(tempStart ?: "", tempEnd ?: current.time ?: "", formatDuration(totalDuration), currentLabel, date))
+                        if (currentLabel == "Active") totalActive += totalDuration else totalInactive += totalDuration
 
-                    if (!sameGroup || i == rawLogs.lastIndex) {
-                        val endTime = currTime
-                        val startDate = format.parse(startTime) ?: continue
-                        val endDate = format.parse(endTime) ?: startDate
-                        val durationMillis = endDate.time - startDate.time
-
-                        val label = if (prevStatus == 1) "Active" else "Inactive"
-                        logList.add(DailyLogEntry(startTime, endTime, formatDuration(durationMillis), label))
-
-                        if (label == "Active") totalActive += durationMillis else totalInactive += durationMillis
-
-                        startTime = currTime
-                        prevStatus = currStatus
+                        currentLabel = label
+                        tempStart = current.time
+                        tempEnd = next.time
+                        groupStartTime = startDateTime.time
+                        groupEndTime = endDateTime.time
                     }
                 }
 
+                if (tempStart != null && tempEnd != null && groupStartTime != null && groupEndTime != null && currentLabel != null) {
+                    val totalDuration = groupEndTime - groupStartTime
+                    merged.add(DailyLogEntry(tempStart, tempEnd, formatDuration(totalDuration), currentLabel, date))
+                    if (currentLabel == "Active") totalActive += totalDuration else totalInactive += totalDuration
+                }
+
+                logList.addAll(merged)
                 fetchedDays++
+
                 if (fetchedDays == datesToFetch.size) {
                     adapter.notifyDataSetChanged()
                     binding.textViewSummary.text = "Active: ${formatDuration(totalActive)} | Inactive: ${formatDuration(totalInactive)}"
@@ -212,8 +221,15 @@ class DailyLogActivity : AppCompatActivity() {
     }
 
     private fun formatDuration(millis: Long): String {
-        val minutes = millis / 1000 / 60
-        val seconds = (millis / 1000) % 60
-        return "${minutes}m ${seconds}s"
+        val totalSeconds = millis / 1000
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        val seconds = totalSeconds % 60
+
+        return when {
+            hours > 0 -> "${hours}h ${minutes}m"
+            minutes > 0 -> "${minutes}m ${seconds}s"
+            else -> "${seconds}s"
+        }
     }
 }

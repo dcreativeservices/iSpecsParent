@@ -3,25 +3,25 @@ package com.ispecs.parent
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.firebase.database.FirebaseDatabase
 import com.ispecs.parent.databinding.ActivityLogsBriefBinding
 import com.ispecs.parent.model.LogEntry
-import com.ispecs.parent.model.StatusDuration
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class LogsBriefActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLogsBriefBinding
     private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    private val timeFormatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+    private val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     private var startDate: String = ""
     private var endDate: String = ""
+    private lateinit var filterButtons: List<TextView>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,11 +33,23 @@ class LogsBriefActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
+        filterButtons = listOf(binding.last7, binding.last30, binding.prevYear, binding.currYear)
+
         initDefaultRange()
         setupQuickFilters()
         setupDatePicker()
+        setupIconButtons()
 
-        binding.viewDetailedLogsBtn.setOnClickListener {
+        loadLogs(startDate, endDate)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
+    }
+
+    private fun setupIconButtons() {
+        findViewById<ImageButton>(R.id.btnDetailedLogs).setOnClickListener {
             val intent = Intent(this, DailyLogActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
@@ -45,7 +57,7 @@ class LogsBriefActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.viewBatteryLogsBtn.setOnClickListener {
+        findViewById<ImageButton>(R.id.btnBatteryLogs).setOnClickListener {
             val intent = Intent(this, BatteryLogActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
@@ -53,20 +65,13 @@ class LogsBriefActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.viewRawLogsBtn.setOnClickListener {
+        findViewById<ImageButton>(R.id.btnRawLogs).setOnClickListener {
             val intent = Intent(this, RawLogsActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
             }
             startActivity(intent)
         }
-
-        loadAndSummarizeLogs()
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
     }
 
     private fun initDefaultRange() {
@@ -78,23 +83,51 @@ class LogsBriefActivity : AppCompatActivity() {
     }
 
     private fun setupQuickFilters() {
-        binding.last7.setOnClickListener { setRangeByDays(7) }
-        binding.last30.setOnClickListener { setRangeByDays(30) }
+        val filters = listOf(binding.last7, binding.last30, binding.prevYear, binding.currYear)
+
+        fun resetFilterStyles() {
+            filters.forEach {
+                it.setBackgroundResource(R.drawable.filter_chip_unselected)
+                it.setTextColor(ContextCompat.getColor(this, R.color.primary))
+            }
+        }
+
+        binding.last7.setOnClickListener {
+            resetFilterStyles()
+            binding.last7.setBackgroundResource(R.drawable.filter_chip_selected)
+            binding.last7.setTextColor(ContextCompat.getColor(this, R.color.white))
+            setRangeByDays(7)
+        }
+
+        binding.last30.setOnClickListener {
+            resetFilterStyles()
+            binding.last30.setBackgroundResource(R.drawable.filter_chip_selected)
+            binding.last30.setTextColor(ContextCompat.getColor(this, R.color.white))
+            setRangeByDays(30)
+        }
+
         binding.prevYear.setOnClickListener {
+            resetFilterStyles()
+            binding.prevYear.setBackgroundResource(R.drawable.filter_chip_selected)
+            binding.prevYear.setTextColor(ContextCompat.getColor(this, R.color.white))
             val fyStart = "${Calendar.getInstance().get(Calendar.YEAR) - 1}-04-01"
             val fyEnd = "${Calendar.getInstance().get(Calendar.YEAR)}-03-31"
             startDate = fyStart
             endDate = fyEnd
             updateDateRangeText()
-            loadAndSummarizeLogs()
+            loadLogs(startDate, endDate)
         }
+
         binding.currYear.setOnClickListener {
+            resetFilterStyles()
+            binding.currYear.setBackgroundResource(R.drawable.filter_chip_selected)
+            binding.currYear.setTextColor(ContextCompat.getColor(this, R.color.white))
             val fyStart = "${Calendar.getInstance().get(Calendar.YEAR)}-04-01"
             val fyEnd = dateFormatter.format(Date())
             startDate = fyStart
             endDate = fyEnd
             updateDateRangeText()
-            loadAndSummarizeLogs()
+            loadLogs(startDate, endDate)
         }
     }
 
@@ -104,7 +137,7 @@ class LogsBriefActivity : AppCompatActivity() {
         cal.add(Calendar.DAY_OF_MONTH, -days)
         startDate = dateFormatter.format(cal.time)
         updateDateRangeText()
-        loadAndSummarizeLogs()
+        loadLogs(startDate, endDate)
     }
 
     private fun setupDatePicker() {
@@ -120,7 +153,7 @@ class LogsBriefActivity : AppCompatActivity() {
                     toCal.set(toYear, toMonth, toDay)
                     endDate = dateFormatter.format(toCal.time)
                     updateDateRangeText()
-                    loadAndSummarizeLogs()
+                    loadLogs(startDate, endDate)
                 }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
         }
@@ -130,13 +163,15 @@ class LogsBriefActivity : AppCompatActivity() {
         binding.textViewDateRange.text = "$startDate — $endDate"
     }
 
-    private fun loadAndSummarizeLogs() {
+    private fun loadLogs(start: String, end: String) {
         val sharedPrefs = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
         val parentId = sharedPrefs.getString("parentId", null) ?: return
 
+        binding.progressOverlay.visibility = View.VISIBLE
+
         val cal = Calendar.getInstance()
-        val startDateObj = dateFormatter.parse(startDate) ?: return
-        val endDateObj = dateFormatter.parse(endDate) ?: return
+        val startDateObj = dateFormatter.parse(start) ?: return
+        val endDateObj = dateFormatter.parse(end) ?: return
 
         cal.time = startDateObj
         val datesToFetch = mutableListOf<String>()
@@ -147,99 +182,86 @@ class LogsBriefActivity : AppCompatActivity() {
 
         val allLogs = mutableListOf<LogEntry>()
         var fetchedCount = 0
+        var totalActive = 0L
+        var totalInactive = 0L
 
         for (date in datesToFetch) {
             val dbRef = FirebaseDatabase.getInstance().getReference("logs").child(parentId).child(date)
             dbRef.get().addOnSuccessListener { snapshot ->
+                val rawLogs = mutableListOf<LogEntry>()
                 for (child in snapshot.children) {
-                    val time = child.child("uploaded_at").getValue(String::class.java)?.let {
-                        if (it.contains(":")) "$date $it" else it
-                    } ?: continue
+                    val time = child.child("uploaded_at").getValue(String::class.java) ?: continue
                     val status = child.child("status").getValue(Int::class.java) ?: 0
-                    val battery = child.child("battery").getValue(Int::class.java) ?: -1
-                    allLogs.add(LogEntry(battery, status, time, emptyMap()))
+                    rawLogs.add(LogEntry(-1, status, time, emptyMap()))
                 }
+
+                rawLogs.sortBy { it.time }
+
+                var tempStart: String? = null
+                var tempEnd: String? = null
+                var currentLabel: String? = null
+                var groupStartTime: Long? = null
+                var groupEndTime: Long? = null
+
+                for (i in 0 until rawLogs.size - 1) {
+                    val current = rawLogs[i]
+                    val next = rawLogs[i + 1]
+
+                    val startDateTime = dateTimeFormat.parse("$date ${current.time}") ?: continue
+                    val endDateTime = dateTimeFormat.parse("$date ${next.time}") ?: continue
+                    val label = if (current.status == 1) "Active" else "Inactive"
+
+                    if (currentLabel == null) {
+                        currentLabel = label
+                        tempStart = current.time
+                        groupStartTime = startDateTime.time
+                    }
+
+                    if (label == currentLabel) {
+                        tempEnd = next.time
+                        groupEndTime = endDateTime.time
+                    } else {
+                        val totalDuration = (groupEndTime ?: endDateTime.time) - (groupStartTime ?: startDateTime.time)
+                        if (currentLabel == "Active") totalActive += totalDuration else totalInactive += totalDuration
+
+                        currentLabel = label
+                        tempStart = current.time
+                        tempEnd = next.time
+                        groupStartTime = startDateTime.time
+                        groupEndTime = endDateTime.time
+                    }
+                }
+
+                if (currentLabel != null && groupStartTime != null && groupEndTime != null) {
+                    val finalDuration = groupEndTime - groupStartTime
+                    if (currentLabel == "Active") totalActive += finalDuration else totalInactive += finalDuration
+                }
+
+                allLogs.addAll(rawLogs)
                 fetchedCount++
-                if (fetchedCount == datesToFetch.size) updateSummary(allLogs)
+
+                if (fetchedCount == datesToFetch.size) {
+                    binding.progressOverlay.visibility = View.GONE
+                    binding.totalOnTime.text = if (totalActive == 0L && totalInactive == 0L) {
+                        "No logs available for selected range"
+                    } else {
+                        "👓 Wearing Glasses: ${formatDuration(totalActive)}\n👁️ Not Wearing: ${formatDuration(totalInactive)}"
+                    }
+                }
             }.addOnFailureListener {
                 fetchedCount++
-                if (fetchedCount == datesToFetch.size) updateSummary(allLogs)
-            }
-        }
-    }
-
-    private fun updateSummary(logsData: List<LogEntry>) {
-        val filteredLogs = logsData.filter { entry ->
-            val datePart = entry.time?.split(" ")?.getOrNull(0) ?: return@filter false
-            datePart in startDate..endDate
-        }.sortedBy { it.time }
-
-        val statusDurations = mutableListOf<StatusDuration>()
-
-        if (filteredLogs.isNotEmpty()) {
-            var startTime = filteredLogs.first().time
-            var currentState = filteredLogs.first().status
-
-            for (i in 1 until filteredLogs.size) {
-                val entry = filteredLogs[i]
-                if (entry.status != currentState) {
-                    val durationInSeconds = calculateTimeDifferenceInSeconds(startTime, entry.time)
-                    statusDurations.add(StatusDuration(
-                        state = if (currentState == 1) "On" else "Off",
-                        startTime = startTime ?: "",
-                        endTime = entry.time ?: "",
-                        durationInSeconds = durationInSeconds
-                    ))
-                    startTime = entry.time
-                    currentState = entry.status
-                }
-            }
-
-            val lastEntry = filteredLogs.last()
-            val durationInSeconds = calculateTimeDifferenceInSeconds(startTime, lastEntry.time)
-            statusDurations.add(StatusDuration(
-                state = if (currentState == 1) "On" else "Off",
-                startTime = startTime ?: "",
-                endTime = lastEntry.time ?: "",
-                durationInSeconds = durationInSeconds
-            ))
-        }
-
-        val totalOnTime = statusDurations.filter { it.state == "On" }.sumOf { it.durationInSeconds }
-        val totalOffTime = statusDurations.filter { it.state == "Off" }.sumOf { it.durationInSeconds }
-
-        binding.totalOnTime.text = buildString {
-            if (totalOnTime == 0L && totalOffTime == 0L) {
-                append("No logs available for selected range")
-            } else {
-                if (totalOnTime > 0) {
-                    append("Child was wearing glasses for ${formatDuration(totalOnTime)}\n")
-                } else {
-                    append("Child was not wearing glasses\n")
-                }
-                if (totalOffTime > 0) {
-                    append("Not wearing glasses for ${formatDuration(totalOffTime)}")
+                if (fetchedCount == datesToFetch.size) {
+                    binding.progressOverlay.visibility = View.GONE
                 }
             }
         }
     }
 
-    private fun calculateTimeDifferenceInSeconds(startTime: String?, endTime: String?): Long {
-        return try {
-            val start = timeFormatter.parse(startTime?.split(" ")?.getOrNull(1) ?: "") ?: return 0
-            val end = timeFormatter.parse(endTime?.split(" ")?.getOrNull(1) ?: "") ?: return 0
-            TimeUnit.MILLISECONDS.toSeconds(end.time - start.time)
-        } catch (e: Exception) {
-            0
-        }
-    }
-
-    private fun formatDuration(seconds: Long): String {
-        val hours = seconds / 3600
-        val minutes = (seconds % 3600) / 60
-        return listOfNotNull(
-            if (hours > 0) "$hours hour${if (hours > 1) "s" else ""}" else null,
-            if (minutes > 0) "$minutes minute${if (minutes > 1) "s" else ""}" else null
-        ).joinToString(" ")
+    private fun formatDuration(millis: Long): String {
+        val totalSeconds = millis / 1000
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        val seconds = totalSeconds % 60
+        return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m ${seconds}s"
     }
 }

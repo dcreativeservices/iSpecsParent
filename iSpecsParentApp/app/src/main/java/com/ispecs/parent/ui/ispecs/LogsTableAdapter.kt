@@ -21,14 +21,14 @@ class LogsTableAdapter(private val logList: List<DailyLogEntry>) :
     override fun onBindViewHolder(holder: LogViewHolder, position: Int) {
         val entry = logList[position]
         with(holder.binding) {
+            date.text = entry.date
             startTime.text = entry.startTime
             endTime.text = entry.endTime
             duration.text = entry.duration
-            status.text = entry.status
 
-            // Color the status text
-            val colorRes = if (entry.status == "Active") R.color.green else R.color.red
-            status.setTextColor(ContextCompat.getColor(status.context, colorRes))
+            // Set status dot color
+            val iconRes = if (entry.status == "Active") R.drawable.ic_green_dot else R.drawable.ic_red_dot
+            statusIcon.setImageResource(iconRes)
         }
     }
 

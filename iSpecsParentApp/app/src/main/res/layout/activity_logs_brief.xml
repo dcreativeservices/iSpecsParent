@@ -4,15 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Toolbar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        app:titleTextColor="@color/white"
-        android:elevation="4dp"/>
+        android:elevation="4dp"
+        app:titleTextColor="@color/white" />
 
+    <!-- Main Scroll Content -->
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar">
@@ -58,7 +61,7 @@
                     android:gravity="center"
                     android:text="Last 7 Days"
                     android:padding="10dp"
-                    android:background="@drawable/filter_chip_background"
+                    android:background="@drawable/filter_chip_unselected"
                     android:textColor="@color/primary"
                     android:textSize="14sp" />
 
@@ -70,7 +73,7 @@
                     android:gravity="center"
                     android:text="Last 30 Days"
                     android:padding="10dp"
-                    android:background="@drawable/filter_chip_background"
+                    android:background="@drawable/filter_chip_unselected"
                     android:textColor="@color/primary"
                     android:textSize="14sp" />
 
@@ -82,7 +85,7 @@
                     android:gravity="center"
                     android:text="Prev Year"
                     android:padding="10dp"
-                    android:background="@drawable/filter_chip_background"
+                    android:background="@drawable/filter_chip_unselected"
                     android:textColor="@color/primary"
                     android:textSize="14sp" />
 
@@ -94,12 +97,12 @@
                     android:gravity="center"
                     android:text="Curr Year"
                     android:padding="10dp"
-                    android:background="@drawable/filter_chip_background"
+                    android:background="@drawable/filter_chip_unselected"
                     android:textColor="@color/primary"
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- ImageView -->
+            <!-- ISpecs Image -->
             <ImageView
                 android:id="@+id/glasses_image"
                 android:layout_width="wrap_content"
@@ -108,49 +111,122 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginBottom="20dp" />
 
-            <!-- Header for Total ON Duration -->
+            <!-- Button Icons Row with Text -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="16dp">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_margin="12dp">
+
+                    <ImageButton
+                        android:id="@+id/btnDetailedLogs"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_logs"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Detailed Logs"
+                        android:tint="@null" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Detailed"
+                        android:textSize="12sp"
+                        android:textColor="@color/black"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_margin="12dp">
+
+                    <ImageButton
+                        android:id="@+id/btnBatteryLogs"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_battery"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Battery Logs"
+                        android:tint="@null" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Battery"
+                        android:textSize="12sp"
+                        android:textColor="@color/black"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_margin="12dp">
+
+                    <ImageButton
+                        android:id="@+id/btnRawLogs"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_code"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Raw Logs"
+                        android:tint="@null" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Raw"
+                        android:textSize="12sp"
+                        android:textColor="@color/black"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Summary Text -->
             <TextView
                 android:id="@+id/totalOnTime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:text="Total time glasses were on: 00:00"
-                android:textSize="20sp"
-                android:fontFamily="@font/roboto_regular"
-                android:gravity="center"
-                android:textColor="@color/black"/>
-
-            <!-- Buttons -->
-            <Button
-                android:id="@+id/viewDetailedLogsBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="View Detailed Logs"
-                android:textAllCaps="false"
-                android:minWidth="200dp"
-                android:layout_marginTop="20dp" />
-
-            <Button
-                android:id="@+id/viewBatteryLogsBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="View Battery Logs"
-                android:textAllCaps="false"
-                android:minWidth="200dp"
-                android:padding="5dp"
-                android:layout_marginTop="10dp" />
-
-            <Button
-                android:id="@+id/viewRawLogsBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="View Raw Logs"
-                android:textAllCaps="false"
-                android:minWidth="200dp"
-                android:padding="5dp"
-                android:layout_marginTop="10dp" />
-
+                android:text="Summary"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:padding="12dp"
+                android:layout_marginTop="16dp"
+                android:background="#EEEEEE"
+                android:gravity="center" />
 
         </LinearLayout>
     </ScrollView>
+
+    <!-- ✅ Progress overlay centered on screen -->
+    <FrameLayout
+        android:id="@+id/progressOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:background="#88000000"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large" />
+    </FrameLayout>
+
 </RelativeLayout>
