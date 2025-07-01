@@ -32,24 +32,20 @@ class SettingsFragment : Fragment() {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // ✅ Auto-select if only one child
         settingsViewModel.loadChildrenList { childList ->
             when {
-                childList.size == 1 -> {
-                    settingsViewModel.loadSelectedChild(childList[0].first)
-                }
-                childList.isNotEmpty() -> {
-                    showChildSelectionDialog(childList)
-                }
-                else -> {
-                    binding.textViewChildName.text = "No Child Found"
-                }
+                childList.size == 1 -> settingsViewModel.loadSelectedChild(childList[0].first)
+                childList.isNotEmpty() -> showChildSelectionDialog(childList)
+                else -> binding.textViewChildName.text = "No Child Found"
             }
         }
 
-        // Observers
         settingsViewModel.childName.observe(viewLifecycleOwner) {
             binding.textViewChildName.text = it
+        }
+
+        settingsViewModel.macAddress.observe(viewLifecycleOwner) {
+            binding.textViewMacAddress.text = "MAC: ${it ?: "--"}"
         }
 
         settingsViewModel.blurIntensity.observe(viewLifecycleOwner) {
@@ -73,21 +69,18 @@ class SettingsFragment : Fragment() {
         }
 
         settingsViewModel.passcode.observe(viewLifecycleOwner) { passcode ->
-            if (!passcode.isNullOrEmpty() && passcode.length == 4) {
-                binding.textViewChildPasscode.text = "****"
+            binding.textViewChildPasscode.text = if (!passcode.isNullOrEmpty() && passcode.length == 4) {
+                "****"
             } else {
-                binding.textViewChildPasscode.text = "----"
+                "----"
             }
         }
 
-        // Click Listeners
+        // Click listeners
         binding.setBlurIntensityLayout.setOnClickListener {
             showUpdateDialog(
-                requireContext(),
-                "Update Blur Intensity",
-                settingsViewModel.blurIntensity.value ?: 80,
-                10,
-                100
+                requireContext(), "Update Blur Intensity",
+                settingsViewModel.blurIntensity.value ?: 80, 10, 100
             ) { newValue ->
                 settingsViewModel.updateChildSetting("blur_intensity", newValue)
             }
@@ -95,11 +88,8 @@ class SettingsFragment : Fragment() {
 
         binding.setBlurDelayLayout.setOnClickListener {
             showUpdateDialog(
-                requireContext(),
-                "Update Blur Delay",
-                settingsViewModel.blurDelay.value ?: 2,
-                1,
-                20
+                requireContext(), "Update Blur Delay",
+                settingsViewModel.blurDelay.value ?: 2, 1, 20
             ) { newValue ->
                 settingsViewModel.updateChildSetting("blur_delay", newValue)
             }
@@ -107,11 +97,8 @@ class SettingsFragment : Fragment() {
 
         binding.setFadeInLayout.setOnClickListener {
             showUpdateDialog(
-                requireContext(),
-                "Update Fade In",
-                settingsViewModel.fadeIn.value ?: 5,
-                1,
-                20
+                requireContext(), "Update Fade In",
+                settingsViewModel.fadeIn.value ?: 5, 1, 20
             ) { newValue ->
                 settingsViewModel.updateChildSetting("fade_in", newValue)
             }

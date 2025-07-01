@@ -1,34 +1,62 @@
 package com.ispecs.parent.ui.ispecs
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.*
-import com.ispecs.parent.ui.ispecs.ChildStatus
-import com.ispecs.parent.ui.ispecs.ChildStatusAdapter
+import com.ispecs.parent.R
 import com.ispecs.parent.databinding.ActivityChildStatusListBinding
 
 class ChildStatusListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityChildStatusListBinding
     private val childrenList = mutableListOf<ChildStatus>()
-    private lateinit var adapter: ChildStatusAdapter
+    private lateinit var adapter: RecyclerView.Adapter<*>
+
+    // Inline data class for child status
+    data class ChildStatus(val name: String, val isActive: Boolean, val mac: String)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChildStatusListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Set up Toolbar with Back button
         setSupportActionBar(binding.toolbar)
         supportActionBar?.apply {
             title = "Child App Status"
             setDisplayHomeAsUpEnabled(true)
         }
 
-        // Set up RecyclerView
-        adapter = ChildStatusAdapter(childrenList)
+        adapter = object : RecyclerView.Adapter<ChildViewHolder>() {
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_child_status, parent, false)
+                return ChildViewHolder(view)
+            }
+
+            override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
+                val child = childrenList[position]
+                holder.nameTextView.text = child.name
+                holder.statusTextView.text = if (child.isActive) "Active" else "Inactive"
+                holder.statusTextView.setTextColor(
+                    ContextCompat.getColor(
+                        this@ChildStatusListActivity,
+                        if (child.isActive) R.color.green else R.color.red
+                    )
+                )
+                holder.macTextView.text = "MAC: ${child.mac}"
+            }
+
+            override fun getItemCount(): Int = childrenList.size
+        }
+
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
 
@@ -46,15 +74,16 @@ class ChildStatusListActivity : AppCompatActivity() {
                     childrenList.clear()
                     for (child in snapshot.children) {
                         val name = child.child("name").getValue(String::class.java) ?: "Unnamed"
-                        val isActive = child.child("is_active").getValue(Boolean::class.java) ?: false
-                        childrenList.add(ChildStatus(name, isActive))
+                        val isActive =
+                            child.child("is_child_app_running").getValue(Boolean::class.java)
+                                ?: false
+                        val mac = child.child("mac").getValue(String::class.java) ?: "N/A"
+                        childrenList.add(ChildStatus(name, isActive, mac))
                     }
                     adapter.notifyDataSetChanged()
                 }
 
-                override fun onCancelled(error: DatabaseError) {
-                    // handle error
-                }
+                override fun onCancelled(error: DatabaseError) {}
             })
     }
 
@@ -65,5 +94,11 @@ class ChildStatusListActivity : AppCompatActivity() {
         } else {
             super.onOptionsItemSelected(item)
         }
+    }
+
+    inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val nameTextView: TextView = itemView.findViewById(R.id.textChildName)
+        val statusTextView: TextView = itemView.findViewById(R.id.textChildStatus)
+        val macTextView: TextView = itemView.findViewById(R.id.textChildMac)
     }
 }

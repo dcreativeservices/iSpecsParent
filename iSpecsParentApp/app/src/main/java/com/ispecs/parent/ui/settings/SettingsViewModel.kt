@@ -1,5 +1,3 @@
-// Updated SettingsViewModel.kt to support per-child settings from Children node
-
 package com.ispecs.parent.ui.settings
 
 import android.app.Application
@@ -39,6 +37,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _childName = MutableLiveData<String>()
     val childName: LiveData<String> = _childName
 
+    private val _macAddress = MutableLiveData<String>()
+    val macAddress: LiveData<String> = _macAddress
+
     private var selectedChildId: String? = null
 
     init {
@@ -61,7 +62,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     children.add(id to name)
                 }
                 callback(children)
-                // ✅ Remove listener after single call
                 childrenRef.removeEventListener(this)
             }
 
@@ -74,7 +74,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         childrenRef.addValueEventListener(listener)
     }
 
-
     fun loadSelectedChild(childId: String) {
         selectedChildId = childId
         val childRef = database.child("Children").child(childId)
@@ -86,6 +85,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 _fadeIn.value = snapshot.child("fade_in").getValue(Int::class.java) ?: 5
                 _mute.value = snapshot.child("mute").getValue(Boolean::class.java) ?: true
                 _passcode.value = snapshot.child("passcode").getValue(String::class.java) ?: ""
+                _macAddress.value = snapshot.child("mac").getValue(String::class.java) ?: "--"
             }
 
             override fun onCancelled(error: DatabaseError) {

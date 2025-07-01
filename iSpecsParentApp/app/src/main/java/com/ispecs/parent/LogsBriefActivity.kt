@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.firebase.database.FirebaseDatabase
@@ -21,6 +22,7 @@ class LogsBriefActivity : AppCompatActivity() {
     private val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     private var startDate: String = ""
     private var endDate: String = ""
+    private var selectedFilter = "custom"
     private lateinit var filterButtons: List<TextView>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +46,7 @@ class LogsBriefActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 
@@ -53,6 +55,7 @@ class LogsBriefActivity : AppCompatActivity() {
             val intent = Intent(this, DailyLogActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
+                putExtra("filterType", selectedFilter)
             }
             startActivity(intent)
         }
@@ -79,37 +82,36 @@ class LogsBriefActivity : AppCompatActivity() {
         val today = dateFormatter.format(cal.time)
         startDate = today
         endDate = today
+        selectedFilter = "custom"
         updateDateRangeText()
     }
 
     private fun setupQuickFilters() {
-        val filters = listOf(binding.last7, binding.last30, binding.prevYear, binding.currYear)
-
-        fun resetFilterStyles() {
-            filters.forEach {
+        fun resetStyles() {
+            filterButtons.forEach {
                 it.setBackgroundResource(R.drawable.filter_chip_unselected)
                 it.setTextColor(ContextCompat.getColor(this, R.color.primary))
             }
         }
 
         binding.last7.setOnClickListener {
-            resetFilterStyles()
-            binding.last7.setBackgroundResource(R.drawable.filter_chip_selected)
-            binding.last7.setTextColor(ContextCompat.getColor(this, R.color.white))
+            resetStyles()
+            selectedFilter = "last7"
+            styleSelected(binding.last7)
             setRangeByDays(7)
         }
 
         binding.last30.setOnClickListener {
-            resetFilterStyles()
-            binding.last30.setBackgroundResource(R.drawable.filter_chip_selected)
-            binding.last30.setTextColor(ContextCompat.getColor(this, R.color.white))
+            resetStyles()
+            selectedFilter = "last30"
+            styleSelected(binding.last30)
             setRangeByDays(30)
         }
 
         binding.prevYear.setOnClickListener {
-            resetFilterStyles()
-            binding.prevYear.setBackgroundResource(R.drawable.filter_chip_selected)
-            binding.prevYear.setTextColor(ContextCompat.getColor(this, R.color.white))
+            resetStyles()
+            selectedFilter = "prevYear"
+            styleSelected(binding.prevYear)
             val fyStart = "${Calendar.getInstance().get(Calendar.YEAR) - 1}-04-01"
             val fyEnd = "${Calendar.getInstance().get(Calendar.YEAR)}-03-31"
             startDate = fyStart
@@ -119,9 +121,9 @@ class LogsBriefActivity : AppCompatActivity() {
         }
 
         binding.currYear.setOnClickListener {
-            resetFilterStyles()
-            binding.currYear.setBackgroundResource(R.drawable.filter_chip_selected)
-            binding.currYear.setTextColor(ContextCompat.getColor(this, R.color.white))
+            resetStyles()
+            selectedFilter = "currYear"
+            styleSelected(binding.currYear)
             val fyStart = "${Calendar.getInstance().get(Calendar.YEAR)}-04-01"
             val fyEnd = dateFormatter.format(Date())
             startDate = fyStart
@@ -129,6 +131,11 @@ class LogsBriefActivity : AppCompatActivity() {
             updateDateRangeText()
             loadLogs(startDate, endDate)
         }
+    }
+
+    private fun styleSelected(view: TextView) {
+        view.setBackgroundResource(R.drawable.filter_chip_selected)
+        view.setTextColor(ContextCompat.getColor(this, R.color.white))
     }
 
     private fun setRangeByDays(days: Int) {
@@ -152,6 +159,7 @@ class LogsBriefActivity : AppCompatActivity() {
                     val toCal = Calendar.getInstance()
                     toCal.set(toYear, toMonth, toDay)
                     endDate = dateFormatter.format(toCal.time)
+                    selectedFilter = "custom"
                     updateDateRangeText()
                     loadLogs(startDate, endDate)
                 }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
@@ -169,10 +177,10 @@ class LogsBriefActivity : AppCompatActivity() {
 
         binding.progressOverlay.visibility = View.VISIBLE
 
-        val cal = Calendar.getInstance()
         val startDateObj = dateFormatter.parse(start) ?: return
         val endDateObj = dateFormatter.parse(end) ?: return
 
+        val cal = Calendar.getInstance()
         cal.time = startDateObj
         val datesToFetch = mutableListOf<String>()
         while (!cal.time.after(endDateObj)) {
@@ -180,7 +188,6 @@ class LogsBriefActivity : AppCompatActivity() {
             cal.add(Calendar.DATE, 1)
         }
 
-        val allLogs = mutableListOf<LogEntry>()
         var fetchedCount = 0
         var totalActive = 0L
         var totalInactive = 0L
@@ -233,13 +240,11 @@ class LogsBriefActivity : AppCompatActivity() {
                 }
 
                 if (currentLabel != null && groupStartTime != null && groupEndTime != null) {
-                    val finalDuration = groupEndTime - groupStartTime
-                    if (currentLabel == "Active") totalActive += finalDuration else totalInactive += finalDuration
+                    val duration = groupEndTime - groupStartTime
+                    if (currentLabel == "Active") totalActive += duration else totalInactive += duration
                 }
 
-                allLogs.addAll(rawLogs)
                 fetchedCount++
-
                 if (fetchedCount == datesToFetch.size) {
                     binding.progressOverlay.visibility = View.GONE
                     binding.totalOnTime.text = if (totalActive == 0L && totalInactive == 0L) {

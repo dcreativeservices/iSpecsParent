@@ -1,44 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:padding="12dp"
-    android:background="@color/gray_bg"
-    android:layout_marginBottom="8dp">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <!-- Profile Icon -->
-    <ImageView
-        android:id="@+id/iconChild"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@drawable/smartphone"
-        android:background="@drawable/circle_bg"
-        android:padding="10dp"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true" />
-
-    <!-- Child Name -->
     <TextView
         android:id="@+id/textChildName"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/iconChild"
-        android:layout_marginStart="16dp"
         android:text="Child Name"
         android:textSize="18sp"
-        android:textColor="@color/black"
-        android:fontFamily="@font/roboto_medium" />
+        android:textStyle="bold" />
 
-    <!-- Child Status -->
     <TextView
         android:id="@+id/textChildStatus"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/textChildName"
-        android:layout_alignStart="@id/textChildName"
-        android:layout_marginTop="4dp"
         android:text="Status"
+        android:textSize="16sp"
+        android:paddingTop="4dp" />
+
+    <TextView
+        android:id="@+id/textChildMac"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MAC: --"
         android:textSize="14sp"
-        android:textColor="@color/dark_gray"
-        android:fontFamily="@font/roboto_regular" />
-</RelativeLayout>
+        android:paddingTop="4dp"
+        android:textColor="#555555" />
+</LinearLayout>
