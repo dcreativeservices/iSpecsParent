@@ -1,7 +1,9 @@
+
 package com.ispecs.parent
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -29,6 +31,9 @@ class DailyLogActivity : AppCompatActivity() {
     private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     private val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
+    private var parentId: String = ""
+    private var childMac: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDailyLogBinding.inflate(layoutInflater)
@@ -47,15 +52,44 @@ class DailyLogActivity : AppCompatActivity() {
         endDate = intent.getStringExtra("endDate") ?: ""
         selectedFilter = intent.getStringExtra("filterType") ?: "last30"
 
-        setupQuickFilters()
-        setupRangeClick()
+        val sharedPrefs = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
+        parentId = sharedPrefs.getString("parentId", null) ?: return
+        val childId = sharedPrefs.getString("selectedChildId", null)
 
-        if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
-            updateDateRangeText()
-            loadLogs(startDate, endDate)
-        } else {
-            setDefaultRange()
+        if (childId.isNullOrEmpty()) {
+            Toast.makeText(this, "No child selected", Toast.LENGTH_SHORT).show()
+            finish()
+            return
         }
+
+        // 🔁 Fetch MAC address from Firebase
+        FirebaseDatabase.getInstance().getReference("Children")
+            .child(childId)
+            .child("mac")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                childMac = snapshot.getValue(String::class.java) ?: ""
+
+                if (childMac.isEmpty()) {
+                    Toast.makeText(this, "MAC not found", Toast.LENGTH_SHORT).show()
+                    finish()
+                    return@addOnSuccessListener
+                }
+
+                setupQuickFilters()
+                setupRangeClick()
+
+                if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
+                    updateDateRangeText()
+                    loadLogs(startDate, endDate)
+                } else {
+                    setDefaultRange()
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to fetch MAC", Toast.LENGTH_SHORT).show()
+                finish()
+            }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -126,7 +160,6 @@ class DailyLogActivity : AppCompatActivity() {
             loadLogs(startDate, endDate)
         }
 
-        // Auto-select chip based on intent
         when (selectedFilter) {
             "last7" -> last7.performClick()
             "last30" -> last30.performClick()
@@ -170,9 +203,6 @@ class DailyLogActivity : AppCompatActivity() {
     }
 
     private fun loadLogs(start: String, end: String) {
-        val sharedPrefs = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
-        val parentId = sharedPrefs.getString("parentId", null) ?: return
-
         binding.progressOverlay.visibility = View.VISIBLE
 
         val startDateObj = dateFormatter.parse(start) ?: return
@@ -192,7 +222,9 @@ class DailyLogActivity : AppCompatActivity() {
         var totalInactive = 0L
 
         for (date in datesToFetch) {
-            val dbRef = FirebaseDatabase.getInstance().getReference("logs").child(parentId).child(date)
+            Log.d("FIREBASE_PATH>>>>>>>>>>>>>>>>", "Path: logs/$parentId/$childMac/$date")
+            val dbRef = FirebaseDatabase.getInstance().getReference("logs").child(parentId).child(childMac).child(date)
+
             dbRef.get().addOnSuccessListener { snapshot ->
                 val rawLogs = mutableListOf<LogEntry>()
                 for (child in snapshot.children) {
@@ -229,9 +261,9 @@ class DailyLogActivity : AppCompatActivity() {
                         tempEnd = next.time
                         groupEndTime = endDateTime.time
                     } else {
-                        val totalDuration = (groupEndTime ?: endDateTime.time) - (groupStartTime ?: startDateTime.time)
-                        merged.add(DailyLogEntry(tempStart ?: "", tempEnd ?: "", formatDuration(totalDuration), currentLabel, date))
-                        if (currentLabel == "Active") totalActive += totalDuration else totalInactive += totalDuration
+                        val duration = (groupEndTime ?: endDateTime.time) - (groupStartTime ?: startDateTime.time)
+                        merged.add(DailyLogEntry(tempStart ?: "", tempEnd ?: "", formatDuration(duration), currentLabel, date))
+                        if (currentLabel == "Active") totalActive += duration else totalInactive += duration
 
                         currentLabel = label
                         tempStart = current.time
@@ -241,7 +273,6 @@ class DailyLogActivity : AppCompatActivity() {
                     }
                 }
 
-                // Add the last group
                 if (tempStart != null && tempEnd != null && groupStartTime != null && groupEndTime != null && currentLabel != null) {
                     val totalDuration = groupEndTime - groupStartTime
                     merged.add(DailyLogEntry(tempStart, tempEnd, formatDuration(totalDuration), currentLabel, date))

@@ -3,6 +3,7 @@ package com.ispecs.parent
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
@@ -23,6 +24,8 @@ class LogsBriefActivity : AppCompatActivity() {
     private var startDate: String = ""
     private var endDate: String = ""
     private var selectedFilter = "custom"
+    private var childMac: String = ""
+    private var parentId: String = ""
     private lateinit var filterButtons: List<TextView>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,11 +41,40 @@ class LogsBriefActivity : AppCompatActivity() {
         filterButtons = listOf(binding.last7, binding.last30, binding.prevYear, binding.currYear)
 
         initDefaultRange()
-        setupQuickFilters()
-        setupDatePicker()
-        setupIconButtons()
 
-        loadLogs(startDate, endDate)
+        val sharedPrefs = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
+        parentId = sharedPrefs.getString("parentId", null) ?: return
+        val selectedChildId = sharedPrefs.getString("selectedChildId", null)
+
+        if (selectedChildId.isNullOrEmpty()) {
+            Toast.makeText(this, "Selected child ID missing", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        // 🔁 Get MAC using selectedChildId from Firebase
+        FirebaseDatabase.getInstance().getReference("Children")
+            .child(selectedChildId)
+            .child("mac")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                childMac = snapshot.getValue(String::class.java) ?: ""
+
+                if (childMac.isEmpty()) {
+                    Toast.makeText(this, "MAC address not found", Toast.LENGTH_SHORT).show()
+                    finish()
+                    return@addOnSuccessListener
+                }
+
+                setupQuickFilters()
+                setupDatePicker()
+                setupIconButtons()
+                loadLogs(startDate, endDate)
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to fetch MAC", Toast.LENGTH_SHORT).show()
+                finish()
+            }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -56,6 +88,7 @@ class LogsBriefActivity : AppCompatActivity() {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
                 putExtra("filterType", selectedFilter)
+                putExtra("childMac", childMac)
             }
             startActivity(intent)
         }
@@ -64,6 +97,7 @@ class LogsBriefActivity : AppCompatActivity() {
             val intent = Intent(this, BatteryLogActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
+                putExtra("childMac", childMac)
             }
             startActivity(intent)
         }
@@ -72,6 +106,7 @@ class LogsBriefActivity : AppCompatActivity() {
             val intent = Intent(this, RawLogsActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
+                putExtra("childMac", childMac)
             }
             startActivity(intent)
         }
@@ -172,9 +207,6 @@ class LogsBriefActivity : AppCompatActivity() {
     }
 
     private fun loadLogs(start: String, end: String) {
-        val sharedPrefs = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
-        val parentId = sharedPrefs.getString("parentId", null) ?: return
-
         binding.progressOverlay.visibility = View.VISIBLE
 
         val startDateObj = dateFormatter.parse(start) ?: return
@@ -191,21 +223,24 @@ class LogsBriefActivity : AppCompatActivity() {
         var fetchedCount = 0
         var totalActive = 0L
         var totalInactive = 0L
-
         for (date in datesToFetch) {
-            val dbRef = FirebaseDatabase.getInstance().getReference("logs").child(parentId).child(date)
+            Log.d("LOG_PATH**********************", "Firebase path: logs/$parentId/$childMac/$date")
+            val dbRef = FirebaseDatabase.getInstance()
+                .getReference("logs")
+                .child(parentId)
+                .child(childMac)
+                .child(date)
+
             dbRef.get().addOnSuccessListener { snapshot ->
                 val rawLogs = mutableListOf<LogEntry>()
                 for (child in snapshot.children) {
                     val time = child.child("uploaded_at").getValue(String::class.java) ?: continue
-                    val status = child.child("status").getValue(Int::class.java) ?: 0
+                    val status = child.child("status").getValue(Int::class.java) ?: continue
                     rawLogs.add(LogEntry(-1, status, time, emptyMap()))
                 }
 
                 rawLogs.sortBy { it.time }
 
-                var tempStart: String? = null
-                var tempEnd: String? = null
                 var currentLabel: String? = null
                 var groupStartTime: Long? = null
                 var groupEndTime: Long? = null
@@ -220,28 +255,29 @@ class LogsBriefActivity : AppCompatActivity() {
 
                     if (currentLabel == null) {
                         currentLabel = label
-                        tempStart = current.time
                         groupStartTime = startDateTime.time
                     }
 
                     if (label == currentLabel) {
-                        tempEnd = next.time
                         groupEndTime = endDateTime.time
                     } else {
-                        val totalDuration = (groupEndTime ?: endDateTime.time) - (groupStartTime ?: startDateTime.time)
-                        if (currentLabel == "Active") totalActive += totalDuration else totalInactive += totalDuration
+                        val duration = (groupEndTime ?: endDateTime.time) - (groupStartTime ?: startDateTime.time)
+                        if (currentLabel == "Active") totalActive += duration else totalInactive += duration
 
                         currentLabel = label
-                        tempStart = current.time
-                        tempEnd = next.time
                         groupStartTime = startDateTime.time
                         groupEndTime = endDateTime.time
                     }
                 }
 
-                if (currentLabel != null && groupStartTime != null && groupEndTime != null) {
-                    val duration = groupEndTime - groupStartTime
-                    if (currentLabel == "Active") totalActive += duration else totalInactive += duration
+                if (rawLogs.isNotEmpty()) {
+                    val last = rawLogs.last()
+                    val lastTime = dateTimeFormat.parse("$date ${last.time}")?.time ?: 0L
+
+                    if (groupStartTime != null && currentLabel != null) {
+                        val duration = lastTime - groupStartTime
+                        if (currentLabel == "Active") totalActive += duration else totalInactive += duration
+                    }
                 }
 
                 fetchedCount++

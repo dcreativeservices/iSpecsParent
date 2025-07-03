@@ -1,6 +1,7 @@
 package com.ispecs.parent.ui.settings
 
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -24,6 +26,8 @@ class SettingsFragment : Fragment() {
         ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
     }
 
+    private var cachedChildrenList: List<Pair<String, String>> = emptyList()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -33,13 +37,34 @@ class SettingsFragment : Fragment() {
         val root: View = binding.root
 
         settingsViewModel.loadChildrenList { childList ->
-            when {
-                childList.size == 1 -> settingsViewModel.loadSelectedChild(childList[0].first)
-                childList.isNotEmpty() -> showChildSelectionDialog(childList)
-                else -> binding.textViewChildName.text = "No Child Found"
+            cachedChildrenList = childList
+
+            val sharedPrefs = requireContext().getSharedPreferences("MySharedPrefs", Context.MODE_PRIVATE)
+            val savedChildId = sharedPrefs.getString("selectedChildId", null)
+
+            val childToLoad = when {
+                savedChildId != null && childList.any { it.first == savedChildId } -> savedChildId
+                childList.isNotEmpty() -> childList[0].first
+                else -> null
+            }
+
+            if (childToLoad != null) {
+                settingsViewModel.loadSelectedChild(childToLoad)
+            } else {
+                binding.textViewChildName.text = "No Child Found"
             }
         }
 
+        // ✅ Always allow opening dialog for debug/testing
+        binding.layoutChildName.setOnClickListener {
+            if (cachedChildrenList.isEmpty()) {
+                Toast.makeText(requireContext(), "No children found", Toast.LENGTH_SHORT).show()
+            } else {
+                showChildSelectionDialog(cachedChildrenList)
+            }
+        }
+
+        // Observers
         settingsViewModel.childName.observe(viewLifecycleOwner) {
             binding.textViewChildName.text = it
         }
@@ -76,7 +101,7 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        // Click listeners
+        // Blur settings
         binding.setBlurIntensityLayout.setOnClickListener {
             showUpdateDialog(
                 requireContext(), "Update Blur Intensity",
@@ -122,8 +147,8 @@ class SettingsFragment : Fragment() {
     private fun showChildSelectionDialog(children: List<Pair<String, String>>) {
         val dialogView = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_select_child, null)
-
         val listView = dialogView.findViewById<ListView>(R.id.childListView)
+
         val adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_list_item_1,
@@ -133,11 +158,16 @@ class SettingsFragment : Fragment() {
 
         val dialog = AlertDialog.Builder(requireContext(), R.style.CustomDialogStyle)
             .setView(dialogView)
-            .setCancelable(false)
+            .setCancelable(true)
             .create()
 
         listView.setOnItemClickListener { _, _, position, _ ->
             val selectedChildId = children[position].first
+
+            // ✅ Save selected child to SharedPreferences
+            val sharedPrefs = requireContext().getSharedPreferences("MySharedPrefs", Context.MODE_PRIVATE)
+            sharedPrefs.edit().putString("selectedChildId", selectedChildId).apply()
+
             settingsViewModel.loadSelectedChild(selectedChildId)
             dialog.dismiss()
         }

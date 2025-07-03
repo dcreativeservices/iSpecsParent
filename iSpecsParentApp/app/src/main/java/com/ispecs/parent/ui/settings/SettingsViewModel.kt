@@ -51,33 +51,43 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun loadChildrenList(callback: (List<Pair<String, String>>) -> Unit) {
         val parent = _parentId.value ?: return
         val childrenRef = database.child("Children")
-            .orderByChild("parent_ids/$parent").equalTo(true)
 
-        val listener = object : ValueEventListener {
+        childrenRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val children = mutableListOf<Pair<String, String>>()
+
                 for (child in snapshot.children) {
                     val id = child.key ?: continue
                     val name = child.child("name").getValue(String::class.java) ?: "Unnamed"
-                    children.add(id to name)
+                    val parentIds = child.child("parent_ids")
+
+                    val isLinkedToParent = parentIds.hasChild(parent) &&
+                            parentIds.child(parent).getValue(Boolean::class.java) == true
+
+                    if (isLinkedToParent) {
+                        children.add(id to name)
+                    }
                 }
+
                 callback(children)
-                childrenRef.removeEventListener(this)
             }
 
             override fun onCancelled(error: DatabaseError) {
+                Log.e("SettingsViewModel", "Error loading children", error.toException())
                 callback(emptyList())
-                childrenRef.removeEventListener(this)
             }
-        }
-
-        childrenRef.addValueEventListener(listener)
+        })
     }
 
     fun loadSelectedChild(childId: String) {
         selectedChildId = childId
+
+        val sharedPrefs = getApplication<Application>()
+            .getSharedPreferences("MySharedPrefs", Context.MODE_PRIVATE)
+        sharedPrefs.edit().putString("selectedChildId", childId).apply()
+
         val childRef = database.child("Children").child(childId)
-        childRef.addValueEventListener(object : ValueEventListener {
+        childRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 _childName.value = snapshot.child("name").getValue(String::class.java) ?: ""
                 _blurIntensity.value = snapshot.child("blur_intensity").getValue(Int::class.java) ?: 80
@@ -93,6 +103,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             }
         })
     }
+
 
     fun updateChildSetting(key: String, value: Any) {
         val childId = selectedChildId ?: return
