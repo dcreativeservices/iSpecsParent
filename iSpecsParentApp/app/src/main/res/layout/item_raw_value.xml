@@ -8,22 +8,6 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <!-- Row container: where all column cells will be added dynamically -->
-        <LinearLayout
-            android:id="@+id/rowContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" />
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#D3D3D3"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp" />
-
-    </LinearLayout>
+        android:orientation="horizontal"
+        android:id="@+id/rowContainer"/>
 </HorizontalScrollView>

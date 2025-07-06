@@ -1,26 +1,24 @@
 package com.ispecs.parent
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.view.*
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.common.util.CollectionUtils.listOf
 import com.google.firebase.database.*
+import com.ispecs.parent.databinding.ActivityRawLogsBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
 class RawLogsActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
-    private val TAG = "RawLogs"
+    private lateinit var binding: ActivityRawLogsBinding
     private lateinit var database: DatabaseReference
+    private val TAG = "RawLogs"
 
     private val keys = listOf(
         "sensor1", "sensor2", "acl_x", "acl_y", "acl_z",
@@ -33,32 +31,68 @@ class RawLogsActivity : AppCompatActivity() {
         "Hour", "Min", "Sec", "Battery", "Specs", "PRX1", "PRX2", "ACL", "Packet"
     )
 
-    private val rows = mutableListOf<List<String>>()
-    private val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val rows = mutableListOf<List<String>>()  // Full data
+    private var filteredRows = mutableListOf<List<String>>()  // Displayed data
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_raw_logs)
+        binding = ActivityRawLogsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        // Toolbar
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Raw Logs"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        // Spinner
+        val packetOptions = listOf("All", "Live", "History")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, packetOptions)
+        binding.spinnerPacketFilter.adapter = adapter
+        binding.spinnerPacketFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+                filterRows(packetOptions[pos])
+            }
 
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // RecyclerView
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // Draw header row manually
+        buildHeaderRow()
+
+        // Firebase
         val parentId = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
             .getString("parentId", null) ?: return
-
         val startDate = intent.getStringExtra("startDate") ?: return
         val endDate = intent.getStringExtra("endDate") ?: return
         val macAddress = intent.getStringExtra("childMac") ?: return
 
         database = FirebaseDatabase.getInstance().reference
-        rows.add(header)
-
         fetchLogsForDateRange(parentId, macAddress, startDate, endDate)
+    }
+
+    private fun buildHeaderRow() {
+        binding.headerRow.removeAllViews()
+        header.forEach { title ->
+            val textView = TextView(this).apply {
+                text = title
+                textSize = 14f
+                setTypeface(null, android.graphics.Typeface.BOLD)
+                setTextColor(Color.BLACK)
+                setBackgroundColor(Color.parseColor("#F0F0F0"))
+                gravity = Gravity.CENTER
+                layoutParams = LinearLayout.LayoutParams(140, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                    setMargins(4, 4, 4, 4)
+                }
+                maxLines = 1
+                ellipsize = TextUtils.TruncateAt.END
+                setSingleLine(true)
+                setPadding(8, 8, 8, 8)
+            }
+            binding.headerRow.addView(textView)
+        }
     }
 
     private fun fetchLogsForDateRange(parentId: String, mac: String, startDate: String, endDate: String) {
@@ -74,6 +108,8 @@ class RawLogsActivity : AppCompatActivity() {
         }
 
         var completed = 0
+        rows.clear()
+
         for (date in dateList) {
             val path = "logs/$parentId/$mac/$date"
             Log.d(TAG, "Fetching logs from: $path")
@@ -84,10 +120,7 @@ class RawLogsActivity : AppCompatActivity() {
                         Log.w(TAG, "No logs for $date")
                     }
                     for (entry in snapshot.children) {
-                        val values = keys.map { key ->
-                            entry.child(key).getValue()?.toString() ?: ""
-                        }
-
+                        val values = keys.map { key -> entry.child(key).getValue()?.toString() ?: "" }
                         if (values.size == 13) {
                             val status = values[12].toIntOrNull() ?: 0
                             val specs = if (status and 0x01 > 0) "On" else "Off"
@@ -103,23 +136,26 @@ class RawLogsActivity : AppCompatActivity() {
 
                     completed++
                     if (completed == dateList.size) {
-                        updateRecycler()
+                        filterRows(binding.spinnerPacketFilter.selectedItem.toString())
                     }
                 }.addOnFailureListener {
                     Log.e(TAG, "Error reading logs: ${it.message}")
                     completed++
                     if (completed == dateList.size) {
-                        updateRecycler()
+                        filterRows(binding.spinnerPacketFilter.selectedItem.toString())
                     }
                 }
         }
     }
 
-    private fun updateRecycler() {
-        if (rows.size == 1) {
-            rows.add(listOf("No logs found for selected range"))
+    private fun filterRows(filter: String) {
+        filteredRows = if (filter == "All") {
+            rows.toMutableList()
+        } else {
+            rows.filter { it.lastOrNull() == filter }.toMutableList()
         }
-        recyclerView.adapter = RawValuesAdapter(rows)
+
+        binding.recyclerView.adapter = RawValuesAdapter(filteredRows)
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -142,28 +178,27 @@ class RawLogsActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val rowData = rows[position]
             holder.rowContainer.removeAllViews()
+            val rowData = rows[position]
 
             rowData.forEach { value ->
-                val textView = TextView(holder.itemView.context).apply {
+                val cell = TextView(holder.itemView.context).apply {
                     text = value
-                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                    setPadding(12, 8, 12, 8)
-                    textAlignment = View.TEXT_ALIGNMENT_CENTER
                     textSize = 14f
-                    setBackgroundResource(R.drawable.cell_border)
-
-                    if (position == 0) {
-                        setTypeface(null, android.graphics.Typeface.BOLD)
+                    setTextColor(Color.BLACK)
+                    gravity = Gravity.CENTER
+                    layoutParams = LinearLayout.LayoutParams(140, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                        setMargins(4, 4, 4, 4)
                     }
+                    maxLines = 1
+                    ellipsize = TextUtils.TruncateAt.END
+                    setSingleLine(true)
+                    setPadding(8, 8, 8, 8)
                 }
-                holder.rowContainer.addView(textView)
+                holder.rowContainer.addView(cell)
             }
         }
 
-
         override fun getItemCount(): Int = rows.size
     }
-
 }

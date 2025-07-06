@@ -14,4 +14,9 @@
     <string name="app_logo">iSpecs Logo</string>
     <string name="battery_legend_label">Battery Legend:</string>
     <string name="current_battery_label">Current Battery: %1$d%%</string>
+    <string-array name="packet_filter_options">
+        <item>All</item>
+        <item>Live</item>
+        <item>History</item>
+    </string-array>
 </resources>

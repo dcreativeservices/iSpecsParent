@@ -81,54 +81,64 @@ class ChildRegistrationActivity : AppCompatActivity() {
 
         val childrenRef = database.getReference("Children")
 
-        // ✅ Check for uniqueness using child_id field
-        childrenRef.orderByChild("child_id").equalTo(childIdInput)
-            .get().addOnSuccessListener { snapshot ->
-                var exists = false
-                for (child in snapshot.children) {
-                    val existingMac = child.child("mac").getValue(String::class.java)
-                    if (existingMac == mac) {
-                        exists = true
-                        break
-                    }
-                }
-
-                if (exists) {
-                    Toast.makeText(this, "Child ID and MAC already registered", Toast.LENGTH_LONG).show()
+        // 🔍 Check if any child has the same MAC address
+        childrenRef.orderByChild("mac").equalTo(mac)
+            .get().addOnSuccessListener { macSnapshot ->
+                if (macSnapshot.exists()) {
+                    Toast.makeText(this, "This MAC is already in use", Toast.LENGTH_LONG).show()
                     return@addOnSuccessListener
                 }
 
-                // ✅ Firebase auto-generated key
-                val childRef = childrenRef.push()
-                val generatedId = childRef.key ?: return@addOnSuccessListener
+                // ✅ Also ensure no duplicate child_id + mac combo (optional, stricter check)
+                childrenRef.orderByChild("child_id").equalTo(childIdInput)
+                    .get().addOnSuccessListener { idSnapshot ->
+                        var conflict = false
+                        for (child in idSnapshot.children) {
+                            val existingMac = child.child("mac").getValue(String::class.java)
+                            if (existingMac == mac) {
+                                conflict = true
+                                break
+                            }
+                        }
 
-                // ✅ Store using "child_id" instead of "childId"
-                val childMap = mapOf(
-                    "firebaseKey" to generatedId,
-                    "child_id" to childIdInput,
-                    "name" to name,
-                    "passcode" to passcode,
-                    "mac" to mac,
-                    "parent_ids" to mapOf(parentId to true),
-                    "screen_time" to 10,
-                    "blur_delay" to 10,
-                    "blur_intensity" to 90,
-                    "fade_in" to 10,
-                    "is_child_app_running" to false,
-                    "mute" to true,
-                    "ispec_device_status" to "inactive"
-                )
+                        if (conflict) {
+                            Toast.makeText(this, "Child ID and MAC already registered", Toast.LENGTH_LONG).show()
+                            return@addOnSuccessListener
+                        }
 
-                childRef.setValue(childMap).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(this, "Child registered successfully!", Toast.LENGTH_SHORT).show()
-                        finish()
-                    } else {
-                        Toast.makeText(this, "Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                        val childRef = childrenRef.push()
+                        val generatedId = childRef.key ?: return@addOnSuccessListener
+
+                        val childMap = mapOf(
+                            "firebaseKey" to generatedId,
+                            "child_id" to childIdInput,
+                            "name" to name,
+                            "passcode" to passcode,
+                            "mac" to mac,
+                            "parent_ids" to mapOf(parentId to true),
+                            "screen_time" to 10,
+                            "blur_delay" to 10,
+                            "blur_intensity" to 90,
+                            "fade_in" to 10,
+                            "is_child_app_running" to false,
+                            "mute" to true,
+                            "ispec_device_status" to "inactive"
+                        )
+
+                        childRef.setValue(childMap).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(this, "Child registered successfully!", Toast.LENGTH_SHORT).show()
+                                finish()
+                            } else {
+                                Toast.makeText(this, "Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }.addOnFailureListener {
+                        Toast.makeText(this, "Error checking child ID: ${it.message}", Toast.LENGTH_LONG).show()
                     }
-                }
+
             }.addOnFailureListener {
-                Toast.makeText(this, "Error checking child ID: ${it.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Error checking MAC: ${it.message}", Toast.LENGTH_LONG).show()
             }
     }
 

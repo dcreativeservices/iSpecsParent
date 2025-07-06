@@ -101,18 +101,18 @@ class LogsBriefActivity : AppCompatActivity() {
 
                 // Set fixed legend once
                 binding.textViewBatteryLegend.text =
-                    "Battery Legend:  🔴 ≤10%   •   🔵 11–80%   •   🟢 >80%"
+                    "iSpec Battery Legend:  🔴 ≤20%   •   🔵 21–80%   •   🟢 >80%"
 
                 if (latestBattery != -1) {
                     val tintColor = when {
-                        latestBattery <= 10 -> Color.RED
+                        latestBattery <= 20 -> Color.RED
                         latestBattery <= 80 -> Color.BLUE
                         else -> Color.GREEN
                     }
                     binding.btnBatteryLogs.imageTintList = ColorStateList.valueOf(tintColor)
-                    binding.textViewBatteryPercentage.text = "Current Battery: $latestBattery%"
+                    binding.textViewBatteryPercentage.text = "iSpec Current Battery: $latestBattery%"
                 } else {
-                    binding.textViewBatteryPercentage.text = "Battery % not available"
+                    binding.textViewBatteryPercentage.text = "iSpec Battery % not available"
                 }
             }
             .addOnFailureListener {
