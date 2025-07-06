@@ -40,6 +40,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _macAddress = MutableLiveData<String>()
     val macAddress: LiveData<String> = _macAddress
 
+    private val _iSpecDeviceStatus = MutableLiveData<String>()
+    val iSpecDeviceStatus: LiveData<String> = _iSpecDeviceStatus
+
     private var selectedChildId: String? = null
 
     init {
@@ -96,6 +99,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 _mute.value = snapshot.child("mute").getValue(Boolean::class.java) ?: true
                 _passcode.value = snapshot.child("passcode").getValue(String::class.java) ?: ""
                 _macAddress.value = snapshot.child("mac").getValue(String::class.java) ?: "--"
+                _iSpecDeviceStatus.value = snapshot.child("ispec_device_status").getValue(String::class.java) ?: "--"
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -103,7 +107,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             }
         })
     }
-
 
     fun updateChildSetting(key: String, value: Any) {
         val childId = selectedChildId ?: return

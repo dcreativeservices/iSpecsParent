@@ -66,7 +66,6 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp" />
 
-                <!-- ✅ MAC Address Text -->
                 <TextView
                     android:id="@+id/textViewMacAddress"
                     android:layout_width="wrap_content"
@@ -81,6 +80,36 @@
                     android:layout_marginTop="2dp"
                     android:layout_marginRight="10dp" />
 
+                <!-- ✅ iSpec Device Status -->
+                <TextView
+                    android:id="@+id/textViewDeviceStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="iSpec Device Status: --"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:layout_below="@id/textViewMacAddress"
+                    android:layout_toRightOf="@id/child_name_icon"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="10dp" />
+
+                <!-- ✅ NEW: iSpec Glasses Wearing Status -->
+                <TextView
+                    android:id="@+id/textViewGlassesWearingStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="iSpec Glasses: --"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:layout_below="@id/textViewDeviceStatus"
+                    android:layout_toRightOf="@id/child_name_icon"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="10dp" />
+
                 <ImageView
                     android:id="@+id/right_arrow_child_name"
                     android:layout_width="25dp"
@@ -90,6 +119,7 @@
                     android:src="@drawable/chevron" />
             </RelativeLayout>
 
+            <!-- Divider -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"

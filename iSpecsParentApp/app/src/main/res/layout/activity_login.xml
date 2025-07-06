@@ -1,78 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginActivity">
+    tools:context=".LoginActivity"
+    android:fillViewport="true"
+    android:background="@color/gray_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:paddingRight="50dp"
-        android:paddingLeft="50dp"
-        android:layout_marginBottom="20dp"
-        android:layout_alignParentTop="true"
-        android:layout_above="@+id/login_btn"
-        android:background="@color/gray_bg">
+        android:padding="32dp">
 
+        <!-- Logo Image (left-aligned) -->
+        <!-- Logo Image (slightly right-aligned) -->
+        <ImageView
+            android:id="@+id/ispecsLogo"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ispecs_app_image"
+            android:contentDescription="@string/app_logo"
+            android:layout_marginBottom="4dp"
+            android:layout_gravity="start"
+            android:translationX="20dp" />
+
+
+        <!-- Subtitle (centered) -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary"
-            android:text="iSpecs"
-            android:textSize="32sp"
-            android:fontFamily="@font/roboto_medium"
-            />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/black"
             android:text="Parent App"
+            android:textColor="@color/black"
             android:textSize="18sp"
-            android:layout_marginTop="20dp"
             android:fontFamily="@font/roboto_regular"
-            />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="0dp"
+            android:translationX="-15dp" />
 
 
-
+        <!-- Email -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:minWidth="300dp"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="32dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Email"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:fontFamily="@font/roboto_regular"
-                />
+                android:fontFamily="@font/roboto_regular" />
             <EditText
+                android:id="@+id/editTextEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:background="@drawable/rounded_edittext"
                 android:hint="Enter email"
                 android:padding="10dp"
-                android:id="@+id/editTextEmail"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/roboto_regular"
                 android:imeOptions="actionNext"
-                android:inputType="textEmailAddress"
-                />
+                android:inputType="textEmailAddress" />
         </LinearLayout>
 
+        <!-- Password -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:minWidth="300dp"
             android:layout_marginTop="20dp">
             <TextView
                 android:layout_width="wrap_content"
@@ -80,83 +81,73 @@
                 android:text="Password"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:fontFamily="@font/roboto_regular"
-                />
+                android:fontFamily="@font/roboto_regular" />
             <EditText
+                android:id="@+id/editTextPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:background="@drawable/rounded_edittext"
                 android:hint="Enter password"
                 android:padding="10dp"
                 android:textSize="16sp"
-                android:id="@+id/editTextPassword"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/roboto_regular"
                 android:imeOptions="actionDone"
-                android:inputType="textPassword"/>
+                android:inputType="textPassword" />
         </LinearLayout>
 
-        <LinearLayout
+        <!-- Forgot Password -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Forgot password?"
+            android:layout_gravity="end"
+            android:layout_marginTop="10dp"
+            android:visibility="invisible" />
+
+        <!-- Login Button -->
+        <Button
+            android:id="@+id/login_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_marginTop="10dp">
+            android:minHeight="48dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/rounded_button"
+            android:text="Login"
+            android:fontFamily="@font/roboto_regular" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Forgot password?"
-                android:layout_gravity="right"
-                android:visibility="invisible"
-                />
-        </LinearLayout>
+        <!-- OR Text (centered) -->
+        <TextView
+            android:id="@+id/or_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Or"
+            android:textColor="@color/dark_gray"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center_horizontal" />
+
+        <!-- Register Button -->
+        <Button
+            android:id="@+id/register_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/rounded_button"
+            android:text="Create Account" />
+
+        <!-- Version Text -->
+        <!-- Version Text (centered) -->
+        <TextView
+            android:id="@+id/version_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:layout_marginTop="30dp"
+            android:text=""
+            android:fontFamily="@font/roboto_regular"
+            android:layout_gravity="center_horizontal" />
 
     </LinearLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/login_btn"
-        android:background="@drawable/rounded_button"
-        android:text="Login"
-        android:fontFamily="@font/roboto_regular"
-        android:layout_above="@+id/or_txt"
-        android:layout_marginBottom="10dp"
-        android:minWidth="300dp"
-        android:layout_centerHorizontal="true"
-        />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Or"
-        android:textColor="@color/dark_gray"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@+id/register_btn"
-        android:id="@+id/or_txt"
-        android:layout_marginBottom="10dp"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Create Account"
-        android:layout_above="@+id/version_txt"
-        android:background="@drawable/rounded_button"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:id="@+id/register_btn"
-        android:minWidth="300dp"
-        />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/black"
-        android:text=""
-        android:id="@+id/version_txt"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"/>
-
-</RelativeLayout>
+</ScrollView>

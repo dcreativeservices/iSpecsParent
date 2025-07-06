@@ -1,6 +1,7 @@
 package com.ispecs.parent.ui.ispecs
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -20,7 +21,7 @@ class ChildStatusListActivity : AppCompatActivity() {
     private val childrenList = mutableListOf<ChildStatus>()
     private lateinit var adapter: RecyclerView.Adapter<*>
 
-    // Inline data class for child status
+    // Data class for child status
     data class ChildStatus(val name: String, val isActive: Boolean, val mac: String)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +45,8 @@ class ChildStatusListActivity : AppCompatActivity() {
             override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
                 val child = childrenList[position]
                 holder.nameTextView.text = child.name
+                holder.macTextView.text = "MAC: ${child.mac}"
+
                 holder.statusTextView.text = if (child.isActive) "Active" else "Inactive"
                 holder.statusTextView.setTextColor(
                     ContextCompat.getColor(
@@ -51,7 +54,6 @@ class ChildStatusListActivity : AppCompatActivity() {
                         if (child.isActive) R.color.green else R.color.red
                     )
                 )
-                holder.macTextView.text = "MAC: ${child.mac}"
             }
 
             override fun getItemCount(): Int = childrenList.size
@@ -64,26 +66,37 @@ class ChildStatusListActivity : AppCompatActivity() {
     }
 
     private fun loadChildren() {
-        val parentId = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
-            .getString("parentId", null) ?: return
+        val sharedPrefs = getSharedPreferences("MySharedPrefs", MODE_PRIVATE)
+        val parentId = sharedPrefs.getString("parentId", null)
+
+        if (parentId == null) {
+            Log.e("ChildStatusList", "Parent ID not found in SharedPreferences.")
+            return
+        }
 
         val dbRef = FirebaseDatabase.getInstance().getReference("Children")
+
         dbRef.orderByChild("parent_ids/$parentId").equalTo(true)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     childrenList.clear()
                     for (child in snapshot.children) {
                         val name = child.child("name").getValue(String::class.java) ?: "Unnamed"
-                        val isActive =
-                            child.child("is_child_app_running").getValue(Boolean::class.java)
-                                ?: false
                         val mac = child.child("mac").getValue(String::class.java) ?: "N/A"
-                        childrenList.add(ChildStatus(name, isActive, mac))
+                        val isRunning = child.child("is_child_app_running").getValue(Boolean::class.java) ?: false
+
+                        Log.d("ChildStatus", "Name: $name | MAC: $mac | Active: $isRunning")
+
+                        childrenList.add(ChildStatus(name, isRunning, mac))
                     }
+
+                    childrenList.sortBy { it.name } // Optional: consistent ordering
                     adapter.notifyDataSetChanged()
                 }
 
-                override fun onCancelled(error: DatabaseError) {}
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("ChildStatus", "Error loading children: ${error.message}")
+                }
             })
     }
 

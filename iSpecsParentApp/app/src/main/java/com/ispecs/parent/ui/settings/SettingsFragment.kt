@@ -3,30 +3,34 @@ package com.ispecs.parent.ui.settings
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.ListView
-import android.widget.Toast
+import android.widget.*
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import com.google.firebase.database.*
 import com.ispecs.parent.R
 import com.ispecs.parent.databinding.FragmentSettingsBinding
 import showUpdateDialog
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
-
     private val settingsViewModel: SettingsViewModel by viewModels {
         ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
     }
 
     private var cachedChildrenList: List<Pair<String, String>> = emptyList()
+    private lateinit var database: DatabaseReference
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +39,7 @@ class SettingsFragment : Fragment() {
     ): View {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val root: View = binding.root
+        database = FirebaseDatabase.getInstance().reference
 
         settingsViewModel.loadChildrenList { childList ->
             cachedChildrenList = childList
@@ -50,12 +55,20 @@ class SettingsFragment : Fragment() {
 
             if (childToLoad != null) {
                 settingsViewModel.loadSelectedChild(childToLoad)
+
+                // Wait for both parentId and macAddress to load
+                settingsViewModel.parentId.observe(viewLifecycleOwner) { parentId ->
+                    settingsViewModel.macAddress.observe(viewLifecycleOwner) { mac ->
+                        if (!parentId.isNullOrBlank() && !mac.isNullOrBlank()) {
+                            fetchChildStatusForGlasses(parentId, mac)
+                        }
+                    }
+                }
             } else {
                 binding.textViewChildName.text = "No Child Found"
             }
         }
 
-        // ✅ Always allow opening dialog for debug/testing
         binding.layoutChildName.setOnClickListener {
             if (cachedChildrenList.isEmpty()) {
                 Toast.makeText(requireContext(), "No children found", Toast.LENGTH_SHORT).show()
@@ -64,13 +77,38 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        // Observers
         settingsViewModel.childName.observe(viewLifecycleOwner) {
             binding.textViewChildName.text = it
         }
 
         settingsViewModel.macAddress.observe(viewLifecycleOwner) {
             binding.textViewMacAddress.text = "MAC: ${it ?: "--"}"
+        }
+
+        settingsViewModel.iSpecDeviceStatus.observe(viewLifecycleOwner) { status ->
+            val label = "iSpec Device Status: "
+            val rawValue = status ?: "--"
+            val value = when (rawValue.lowercase()) {
+                "active" -> "Connected"
+                "inactive" -> "Disconnected"
+                else -> "--"
+            }
+
+            val spannable = SpannableString(label + value)
+            val color = when (value) {
+                "Connected" -> ContextCompat.getColor(requireContext(), R.color.green)
+                "Disconnected" -> ContextCompat.getColor(requireContext(), R.color.red)
+                else -> ContextCompat.getColor(requireContext(), R.color.dark_gray)
+            }
+
+            spannable.setSpan(
+                ForegroundColorSpan(color),
+                label.length,
+                label.length + value.length,
+                SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+
+            binding.textViewDeviceStatus.text = spannable
         }
 
         settingsViewModel.blurIntensity.observe(viewLifecycleOwner) {
@@ -101,10 +139,8 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        // Blur settings
         binding.setBlurIntensityLayout.setOnClickListener {
-            showUpdateDialog(
-                requireContext(), "Update Blur Intensity",
+            showUpdateDialog(requireContext(), "Update Blur Intensity",
                 settingsViewModel.blurIntensity.value ?: 80, 10, 100
             ) { newValue ->
                 settingsViewModel.updateChildSetting("blur_intensity", newValue)
@@ -112,8 +148,7 @@ class SettingsFragment : Fragment() {
         }
 
         binding.setBlurDelayLayout.setOnClickListener {
-            showUpdateDialog(
-                requireContext(), "Update Blur Delay",
+            showUpdateDialog(requireContext(), "Update Blur Delay",
                 settingsViewModel.blurDelay.value ?: 2, 1, 20
             ) { newValue ->
                 settingsViewModel.updateChildSetting("blur_delay", newValue)
@@ -121,8 +156,7 @@ class SettingsFragment : Fragment() {
         }
 
         binding.setFadeInLayout.setOnClickListener {
-            showUpdateDialog(
-                requireContext(), "Update Fade In",
+            showUpdateDialog(requireContext(), "Update Fade In",
                 settingsViewModel.fadeIn.value ?: 5, 1, 20
             ) { newValue ->
                 settingsViewModel.updateChildSetting("fade_in", newValue)
@@ -144,6 +178,94 @@ class SettingsFragment : Fragment() {
         return root
     }
 
+    private fun fetchChildStatusForGlasses(parentId: String, macAddress: String) {
+        val glassesStatusView = binding.textViewGlassesWearingStatus
+        val sanitizedMac = macAddress.trim()
+
+        val baseRef = FirebaseDatabase.getInstance()
+            .getReference("logs")
+            .child(parentId)
+            .child(sanitizedMac)
+
+        Log.d("iSPEC", "Checking logs/$parentId/$sanitizedMac")
+
+        baseRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    Log.e("iSPEC", "No logs found for $parentId/$sanitizedMac")
+                    glassesStatusView.text = "iSpec Glasses: --"
+                    glassesStatusView.setTextColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
+                    return
+                }
+
+                val dateList = snapshot.children.mapNotNull { it.key }
+                Log.d("iSPEC", "Available Dates: $dateList")
+
+                val latestDate = dateList.maxOrNull()
+                if (latestDate == null) {
+                    Log.e("iSPEC", "No valid date keys under logs.")
+                    glassesStatusView.text = "iSpec Glasses: --"
+                    glassesStatusView.setTextColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
+                    return
+                }
+
+                Log.d("iSPEC", "Latest Date Found: $latestDate")
+
+                val logRef = baseRef.child(latestDate)
+
+                logRef.limitToLast(1)
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(logSnapshot: DataSnapshot) {
+                            if (!logSnapshot.exists()) {
+                                Log.e("iSPEC", "No log entries on $latestDate")
+                                glassesStatusView.text = "iSpec Glasses: --"
+                                glassesStatusView.setTextColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
+                                return
+                            }
+
+                            var found = false
+                            for (entry in logSnapshot.children) {
+                                val status = entry.child("status").getValue(Int::class.java)
+                                Log.d("iSPEC", "Log entry: ${entry.key}, Status: $status")
+                                if (status == 1) found = true
+                            }
+
+                            val label = "iSpec Glasses: "
+                            val statusText = if (found) "Wearing" else "Not Wearing"
+                            val fullText = label + statusText
+
+                            val spannable = SpannableString(fullText)
+                            val color = ContextCompat.getColor(
+                                requireContext(),
+                                if (found) R.color.green else R.color.red
+                            )
+
+                            spannable.setSpan(
+                                ForegroundColorSpan(color),
+                                label.length,
+                                fullText.length,
+                                SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+
+                            glassesStatusView.text = spannable
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.e("iSPEC", "Log fetch error: ${error.message}")
+                            glassesStatusView.text = "iSpec Glasses: --"
+                            glassesStatusView.setTextColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
+                        }
+                    })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("iSPEC", "Date fetch error: ${error.message}")
+                glassesStatusView.text = "iSpec Glasses: --"
+                glassesStatusView.setTextColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
+            }
+        })
+    }
+
     private fun showChildSelectionDialog(children: List<Pair<String, String>>) {
         val dialogView = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_select_child, null)
@@ -163,12 +285,16 @@ class SettingsFragment : Fragment() {
 
         listView.setOnItemClickListener { _, _, position, _ ->
             val selectedChildId = children[position].first
-
-            // ✅ Save selected child to SharedPreferences
             val sharedPrefs = requireContext().getSharedPreferences("MySharedPrefs", Context.MODE_PRIVATE)
             sharedPrefs.edit().putString("selectedChildId", selectedChildId).apply()
-
             settingsViewModel.loadSelectedChild(selectedChildId)
+
+            settingsViewModel.parentId.value?.let { parentId ->
+                settingsViewModel.macAddress.value?.let { mac ->
+                    fetchChildStatusForGlasses(parentId, mac)
+                }
+            }
+
             dialog.dismiss()
         }
 

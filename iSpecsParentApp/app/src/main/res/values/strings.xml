@@ -11,4 +11,7 @@
     <string name="mac_address">MAC Address</string>
     <string name="passcode">Passcode</string>
     <string name="register_child">Register Child</string>
+    <string name="app_logo">iSpecs Logo</string>
+    <string name="battery_legend_label">Battery Legend:</string>
+    <string name="current_battery_label">Current Battery: %1$d%%</string>
 </resources>

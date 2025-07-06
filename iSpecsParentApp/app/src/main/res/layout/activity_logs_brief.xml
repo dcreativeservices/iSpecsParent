@@ -14,7 +14,6 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:titleTextColor="@color/white" />
 
-
     <!-- Main Scroll Content -->
     <ScrollView
         android:id="@+id/scrollView"
@@ -26,8 +25,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:gravity="center_horizontal">
 
             <!-- Date Range -->
             <TextView
@@ -104,7 +103,7 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- ISpecs Image -->
+            <!-- iSpecs Image -->
             <ImageView
                 android:id="@+id/glasses_image"
                 android:layout_width="wrap_content"
@@ -113,13 +112,13 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginBottom="20dp" />
 
-            <!-- Button Icons Row with Text -->
+            <!-- Buttons Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="8dp">
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -197,7 +196,46 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Summary Text -->
+            <!-- 🔋 Battery Info in a Row -->
+            <!-- 🔋 Battery Info (Vertical: Battery %, then Legend) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp"
+                android:padding="8dp"
+                android:background="#f2f2f2"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/textViewBatteryPercentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Battery: --%"
+                    android:textSize="14sp"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/textViewBatteryLegend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Legend: 🔴 ≤10%  •  🔵 11–80%  •  🟢 >80%"
+                    android:textSize="14sp"
+                    android:textColor="@color/black" />
+            </LinearLayout>
+
+
+            <!-- 📊 Bar Chart -->
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChart"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/rounded_edittext"
+                android:visibility="visible" />
+
+            <!-- 📝 Summary -->
             <TextView
                 android:id="@+id/totalOnTime"
                 android:layout_width="match_parent"
@@ -209,11 +247,10 @@
                 android:layout_marginTop="16dp"
                 android:background="#EEEEEE"
                 android:gravity="center" />
-
         </LinearLayout>
     </ScrollView>
 
-    <!-- ✅ Progress overlay centered on screen -->
+    <!-- 🔄 Progress Overlay -->
     <FrameLayout
         android:id="@+id/progressOverlay"
         android:layout_width="match_parent"
@@ -230,5 +267,4 @@
             android:layout_gravity="center"
             style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large" />
     </FrameLayout>
-
 </RelativeLayout>

@@ -14,6 +14,7 @@ import com.ispecs.parent.LogsBriefActivity
 import com.ispecs.parent.databinding.FragmentIspecsBinding
 
 class iSpecsFragment : Fragment() {
+
     private var _binding: FragmentIspecsBinding? = null
     private val binding get() = _binding!!
     private lateinit var database: DatabaseReference
@@ -24,6 +25,7 @@ class iSpecsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentIspecsBinding.inflate(inflater, container, false)
+
         (requireActivity() as AppCompatActivity).setSupportActionBar(binding.toolbar)
         binding.toolbar.title = "iSpecs Parent"
 
@@ -45,8 +47,13 @@ class iSpecsFragment : Fragment() {
         val parentId = sharedPrefs.getString("parentId", null)
         val selectedChildId = sharedPrefs.getString("selectedChildId", null)
 
-        if (parentId.isNullOrEmpty() || selectedChildId.isNullOrEmpty()) {
-            Toast.makeText(requireContext(), "Parent or selected child not found", Toast.LENGTH_SHORT).show()
+        if (parentId.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "Parent info not found. Please log in again.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (selectedChildId.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "Please select a child from the Settings tab first.", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -55,7 +62,6 @@ class iSpecsFragment : Fragment() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val mac = snapshot.child("mac").getValue(String::class.java)
                 if (!mac.isNullOrEmpty()) {
-                    // Save to SharedPreferences in case needed later
                     sharedPrefs.edit().putString("childMac", mac).apply()
 
                     val intent = Intent(requireContext(), LogsBriefActivity::class.java).apply {
@@ -63,7 +69,7 @@ class iSpecsFragment : Fragment() {
                     }
                     startActivity(intent)
                 } else {
-                    Toast.makeText(requireContext(), "MAC address missing for selected child", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "MAC address not found for selected child.", Toast.LENGTH_SHORT).show()
                 }
             }
 

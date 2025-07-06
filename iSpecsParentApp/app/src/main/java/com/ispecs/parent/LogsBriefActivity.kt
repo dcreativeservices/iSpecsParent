@@ -2,14 +2,22 @@ package com.ispecs.parent
 
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.firebase.database.FirebaseDatabase
 import com.ispecs.parent.databinding.ActivityLogsBriefBinding
 import com.ispecs.parent.model.LogEntry
@@ -52,20 +60,19 @@ class LogsBriefActivity : AppCompatActivity() {
             return
         }
 
-        // 🔁 Get MAC using selectedChildId from Firebase
         FirebaseDatabase.getInstance().getReference("Children")
             .child(selectedChildId)
             .child("mac")
             .get()
             .addOnSuccessListener { snapshot ->
                 childMac = snapshot.getValue(String::class.java) ?: ""
-
                 if (childMac.isEmpty()) {
                     Toast.makeText(this, "MAC address not found", Toast.LENGTH_SHORT).show()
                     finish()
                     return@addOnSuccessListener
                 }
 
+                updateBatteryIconColor()
                 setupQuickFilters()
                 setupDatePicker()
                 setupIconButtons()
@@ -77,13 +84,51 @@ class LogsBriefActivity : AppCompatActivity() {
             }
     }
 
+    private fun updateBatteryIconColor() {
+        val today = dateFormatter.format(Date())
+        FirebaseDatabase.getInstance()
+            .getReference("logs")
+            .child(parentId)
+            .child(childMac)
+            .child(today)
+            .limitToLast(1)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                var latestBattery = -1
+                for (data in snapshot.children) {
+                    latestBattery = data.child("battery").getValue(Int::class.java) ?: -1
+                }
+
+                // Set fixed legend once
+                binding.textViewBatteryLegend.text =
+                    "Battery Legend:  🔴 ≤10%   •   🔵 11–80%   •   🟢 >80%"
+
+                if (latestBattery != -1) {
+                    val tintColor = when {
+                        latestBattery <= 10 -> Color.RED
+                        latestBattery <= 80 -> Color.BLUE
+                        else -> Color.GREEN
+                    }
+                    binding.btnBatteryLogs.imageTintList = ColorStateList.valueOf(tintColor)
+                    binding.textViewBatteryPercentage.text = "Current Battery: $latestBattery%"
+                } else {
+                    binding.textViewBatteryPercentage.text = "Battery % not available"
+                }
+            }
+            .addOnFailureListener {
+                binding.textViewBatteryPercentage.text = "Battery data fetch error"
+            }
+    }
+
+
+
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
     }
 
     private fun setupIconButtons() {
-        findViewById<ImageButton>(R.id.btnDetailedLogs).setOnClickListener {
+        binding.btnDetailedLogs.setOnClickListener {
             val intent = Intent(this, DailyLogActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
@@ -93,16 +138,17 @@ class LogsBriefActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        findViewById<ImageButton>(R.id.btnBatteryLogs).setOnClickListener {
+        binding.btnBatteryLogs.setOnClickListener {
             val intent = Intent(this, BatteryLogActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
                 putExtra("childMac", childMac)
+                putExtra("parentId", parentId)
             }
             startActivity(intent)
         }
 
-        findViewById<ImageButton>(R.id.btnRawLogs).setOnClickListener {
+        binding.btnRawLogs.setOnClickListener {
             val intent = Intent(this, RawLogsActivity::class.java).apply {
                 putExtra("startDate", startDate)
                 putExtra("endDate", endDate)
@@ -122,13 +168,6 @@ class LogsBriefActivity : AppCompatActivity() {
     }
 
     private fun setupQuickFilters() {
-        fun resetStyles() {
-            filterButtons.forEach {
-                it.setBackgroundResource(R.drawable.filter_chip_unselected)
-                it.setTextColor(ContextCompat.getColor(this, R.color.primary))
-            }
-        }
-
         binding.last7.setOnClickListener {
             resetStyles()
             selectedFilter = "last7"
@@ -168,6 +207,13 @@ class LogsBriefActivity : AppCompatActivity() {
         }
     }
 
+    private fun resetStyles() {
+        filterButtons.forEach {
+            it.setBackgroundResource(R.drawable.filter_chip_unselected)
+            it.setTextColor(ContextCompat.getColor(this, R.color.primary))
+        }
+    }
+
     private fun styleSelected(view: TextView) {
         view.setBackgroundResource(R.drawable.filter_chip_selected)
         view.setTextColor(ContextCompat.getColor(this, R.color.white))
@@ -186,18 +232,18 @@ class LogsBriefActivity : AppCompatActivity() {
         binding.textViewDateRange.setOnClickListener {
             val cal = Calendar.getInstance()
             DatePickerDialog(this, { _, year, month, day ->
-                val fromCal = Calendar.getInstance()
-                fromCal.set(year, month, day)
+                val fromCal = Calendar.getInstance().apply { set(year, month, day) }
                 startDate = dateFormatter.format(fromCal.time)
 
                 DatePickerDialog(this, { _, toYear, toMonth, toDay ->
-                    val toCal = Calendar.getInstance()
-                    toCal.set(toYear, toMonth, toDay)
+                    val toCal = Calendar.getInstance().apply { set(toYear, toMonth, toDay) }
                     endDate = dateFormatter.format(toCal.time)
                     selectedFilter = "custom"
+                    resetStyles()
                     updateDateRangeText()
                     loadLogs(startDate, endDate)
                 }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
         }
     }
@@ -212,8 +258,7 @@ class LogsBriefActivity : AppCompatActivity() {
         val startDateObj = dateFormatter.parse(start) ?: return
         val endDateObj = dateFormatter.parse(end) ?: return
 
-        val cal = Calendar.getInstance()
-        cal.time = startDateObj
+        val cal = Calendar.getInstance().apply { time = startDateObj }
         val datesToFetch = mutableListOf<String>()
         while (!cal.time.after(endDateObj)) {
             datesToFetch.add(dateFormatter.format(cal.time))
@@ -223,8 +268,10 @@ class LogsBriefActivity : AppCompatActivity() {
         var fetchedCount = 0
         var totalActive = 0L
         var totalInactive = 0L
-        for (date in datesToFetch) {
-            Log.d("LOG_PATH**********************", "Firebase path: logs/$parentId/$childMac/$date")
+        val barEntries = mutableListOf<BarEntry>()
+        val dateLabels = mutableListOf<String>()
+
+        for ((index, date) in datesToFetch.withIndex()) {
             val dbRef = FirebaseDatabase.getInstance()
                 .getReference("logs")
                 .child(parentId)
@@ -232,53 +279,57 @@ class LogsBriefActivity : AppCompatActivity() {
                 .child(date)
 
             dbRef.get().addOnSuccessListener { snapshot ->
-                val rawLogs = mutableListOf<LogEntry>()
-                for (child in snapshot.children) {
-                    val time = child.child("uploaded_at").getValue(String::class.java) ?: continue
-                    val status = child.child("status").getValue(Int::class.java) ?: continue
-                    rawLogs.add(LogEntry(-1, status, time, emptyMap()))
-                }
-
-                rawLogs.sortBy { it.time }
+                val rawLogs = snapshot.children.mapNotNull {
+                    val time = it.child("uploaded_at").getValue(String::class.java)
+                    val status = it.child("status").getValue(Int::class.java)
+                    if (time != null && status != null) LogEntry(-1, status, time, emptyMap()) else null
+                }.sortedBy { it.time }
 
                 var currentLabel: String? = null
-                var groupStartTime: Long? = null
-                var groupEndTime: Long? = null
+                var groupStart: Long? = null
+                var groupEnd: Long? = null
+
+                var dailyActive = 0L
+                var dailyInactive = 0L
 
                 for (i in 0 until rawLogs.size - 1) {
-                    val current = rawLogs[i]
+                    val curr = rawLogs[i]
                     val next = rawLogs[i + 1]
 
-                    val startDateTime = dateTimeFormat.parse("$date ${current.time}") ?: continue
-                    val endDateTime = dateTimeFormat.parse("$date ${next.time}") ?: continue
-                    val label = if (current.status == 1) "Active" else "Inactive"
+                    val startTime = dateTimeFormat.parse("$date ${curr.time}")?.time ?: continue
+                    val endTime = dateTimeFormat.parse("$date ${next.time}")?.time ?: continue
+                    val label = if (curr.status == 1) "Active" else "Inactive"
 
                     if (currentLabel == null) {
                         currentLabel = label
-                        groupStartTime = startDateTime.time
+                        groupStart = startTime
                     }
 
                     if (label == currentLabel) {
-                        groupEndTime = endDateTime.time
+                        groupEnd = endTime
                     } else {
-                        val duration = (groupEndTime ?: endDateTime.time) - (groupStartTime ?: startDateTime.time)
-                        if (currentLabel == "Active") totalActive += duration else totalInactive += duration
+                        val duration = (groupEnd ?: endTime) - (groupStart ?: startTime)
+                        if (currentLabel == "Active") dailyActive += duration else dailyInactive += duration
 
                         currentLabel = label
-                        groupStartTime = startDateTime.time
-                        groupEndTime = endDateTime.time
+                        groupStart = startTime
+                        groupEnd = endTime
                     }
                 }
 
-                if (rawLogs.isNotEmpty()) {
+                if (rawLogs.isNotEmpty() && groupStart != null && currentLabel != null) {
                     val last = rawLogs.last()
                     val lastTime = dateTimeFormat.parse("$date ${last.time}")?.time ?: 0L
-
-                    if (groupStartTime != null && currentLabel != null) {
-                        val duration = lastTime - groupStartTime
-                        if (currentLabel == "Active") totalActive += duration else totalInactive += duration
-                    }
+                    val duration = lastTime - groupStart
+                    if (currentLabel == "Active") dailyActive += duration else dailyInactive += duration
                 }
+
+                totalActive += dailyActive
+                totalInactive += dailyInactive
+
+                val dailyActiveMinutes = dailyActive / 60000f
+                barEntries.add(BarEntry(index.toFloat(), dailyActiveMinutes))
+                dateLabels.add(date.substring(5))
 
                 fetchedCount++
                 if (fetchedCount == datesToFetch.size) {
@@ -288,6 +339,7 @@ class LogsBriefActivity : AppCompatActivity() {
                     } else {
                         "👓 Wearing Glasses: ${formatDuration(totalActive)}\n👁️ Not Wearing: ${formatDuration(totalInactive)}"
                     }
+                    showBarChart(barEntries, dateLabels)
                 }
             }.addOnFailureListener {
                 fetchedCount++
@@ -298,11 +350,54 @@ class LogsBriefActivity : AppCompatActivity() {
         }
     }
 
+    private fun showBarChart(entries: List<BarEntry>, labels: List<String>) {
+        val dataSet = BarDataSet(entries, "Wearing Duration (h m)").apply {
+            colors = ColorTemplate.MATERIAL_COLORS.toList()
+            valueTextColor = ContextCompat.getColor(this@LogsBriefActivity, R.color.black)
+            valueTextSize = 12f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    val mins = value.toInt()
+                    val hrs = mins / 60
+                    val remMins = mins % 60
+                    return if (hrs > 0) "${hrs}h ${remMins}m" else "${remMins}m"
+                }
+            }
+        }
+
+        val barData = BarData(dataSet)
+        binding.barChart.data = barData
+
+        binding.barChart.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+            valueFormatter = IndexAxisValueFormatter(labels)
+            setDrawGridLines(false)
+            granularity = 1f
+            labelRotationAngle = -45f
+        }
+
+        binding.barChart.axisLeft.apply {
+            granularity = 1f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    val mins = value.toInt()
+                    val hrs = mins / 60
+                    val remMins = mins % 60
+                    return if (hrs > 0) "${hrs}h\n${remMins}m" else "${remMins}m"
+                }
+            }
+        }
+
+        binding.barChart.axisRight.isEnabled = false
+        binding.barChart.description = Description().apply { text = "Daily Wearing Time" }
+        binding.barChart.invalidate()
+    }
+
     private fun formatDuration(millis: Long): String {
-        val totalSeconds = millis / 1000
-        val hours = totalSeconds / 3600
-        val minutes = (totalSeconds % 3600) / 60
-        val seconds = totalSeconds % 60
-        return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m ${seconds}s"
+        val seconds = millis / 1000
+        val hours = seconds / 3600
+        val minutes = (seconds % 3600) / 60
+        val secs = seconds % 60
+        return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m ${secs}s"
     }
 }

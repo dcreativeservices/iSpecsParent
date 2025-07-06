@@ -24,170 +24,189 @@
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Content -->
-    <LinearLayout
+    <!-- Scrollable Content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp"
         android:layout_marginTop="?attr/actionBarSize"
-        android:background="@color/white">
+        android:fillViewport="true">
 
-        <!-- Date Range Display -->
-        <TextView
-            android:id="@+id/textViewDateRange"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="2025-06-01 — 2025-06-30"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:background="@drawable/date_range_background"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp"
-            android:drawableEnd="@drawable/ic_calendar"
-            android:drawablePadding="8dp"
-            android:clickable="true"
-            android:focusable="true" />
-
-        <!-- Quick Filters -->
         <LinearLayout
-            android:id="@+id/quickFiltersLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp"
-            android:gravity="center"
-            android:weightSum="4">
+            android:orientation="vertical"
+            android:padding="16dp">
 
+            <!-- Date Range Display -->
             <TextView
-                android:id="@+id/last7"
-                android:layout_width="0dp"
+                android:id="@+id/textViewDateRange"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Last 7 Days"
-                android:padding="10dp"
-                android:background="@drawable/filter_chip_background"
-                android:textColor="@color/primary"
-                android:textSize="14sp" />
+                android:text="2025-06-01 — 2025-06-30"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:background="@drawable/date_range_background"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp"
+                android:drawableEnd="@drawable/ic_calendar"
+                android:drawablePadding="8dp"
+                android:clickable="true"
+                android:focusable="true" />
 
-            <TextView
-                android:id="@+id/last30"
-                android:layout_width="0dp"
+            <!-- Quick Filters -->
+            <LinearLayout
+                android:id="@+id/quickFiltersLayout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
                 android:gravity="center"
-                android:text="Last 30 Days"
-                android:padding="10dp"
-                android:background="@drawable/filter_chip_background"
-                android:textColor="@color/primary"
-                android:textSize="14sp" />
+                android:weightSum="4">
 
-            <TextView
-                android:id="@+id/prevYear"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Prev Year"
-                android:padding="10dp"
-                android:background="@drawable/filter_chip_background"
-                android:textColor="@color/primary"
-                android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/last7"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Last 7 Days"
+                    android:padding="10dp"
+                    android:background="@drawable/filter_chip_background"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/currYear"
-                android:layout_width="0dp"
+                <TextView
+                    android:id="@+id/last30"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Last 30 Days"
+                    android:padding="10dp"
+                    android:background="@drawable/filter_chip_background"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/prevYear"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Prev Year"
+                    android:padding="10dp"
+                    android:background="@drawable/filter_chip_background"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/currYear"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="Curr Year"
+                    android:padding="10dp"
+                    android:background="@drawable/filter_chip_background"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Table Header -->
+            <LinearLayout
+                android:id="@+id/tableHeader"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Curr Year"
-                android:padding="10dp"
-                android:background="@drawable/filter_chip_background"
-                android:textColor="@color/primary"
-                android:textSize="14sp" />
+                android:orientation="horizontal"
+                android:paddingVertical="8dp"
+                android:background="#EEEEEE">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Date"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:gravity="center_horizontal" />
+
+                <!-- Start Time -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Start"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:gravity="end"
+                    android:paddingEnd="2dp" />
+
+                <!-- End Time -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="End"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:gravity="end"
+                    android:paddingEnd="2dp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Dur"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:gravity="end"
+                    android:paddingEnd="0dp" />
+
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Status"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:gravity="end"
+                    android:paddingEnd="2dp" />
+
+            </LinearLayout>
+
+            <!-- Table Data (Fixed Height) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/logsTableRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:paddingTop="8dp" />
+
+            <!-- Graph Below Table -->
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/logsBarChart"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/rounded_edittext" />
+
+            <!-- Summary -->
+            <TextView
+                android:id="@+id/textViewSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Summary"
+                android:textSize="15sp"
+                android:textColor="@color/black"
+                android:background="@drawable/summary_card_background"
+                android:padding="16dp"
+                android:layout_marginTop="16dp"
+                android:textAlignment="center"
+                android:elevation="2dp" />
+
         </LinearLayout>
-
-        <!-- Table Header -->
-        <LinearLayout
-            android:id="@+id/tableHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingVertical="8dp"
-            android:background="#EEEEEE"
-            android:layout_marginTop="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Date"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Start"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="End"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Dur"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Status"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:gravity="center"
-                android:padding="4dp" />
-
-        </LinearLayout>
-
-        <!-- Table Data -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/logsTableRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:paddingTop="8dp" />
-
-        <!-- Summary -->
-        <TextView
-            android:id="@+id/textViewSummary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Summary"
-            android:textSize="15sp"
-            android:textColor="@color/black"
-            android:background="@drawable/summary_card_background"
-            android:padding="16dp"
-            android:layout_marginTop="16dp"
-            android:textAlignment="center"
-            android:elevation="2dp" />
-    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- Overlay Progress -->
     <FrameLayout

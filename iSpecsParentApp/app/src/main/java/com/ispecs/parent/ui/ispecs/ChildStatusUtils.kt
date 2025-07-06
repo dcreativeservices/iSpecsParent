@@ -8,11 +8,11 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.ispecs.parent.R
 
-// Inline data class (still needed to hold the 3 fields)
 data class ChildStatus(val name: String, val isActive: Boolean, val mac: String)
 
-class ChildStatusAdapter(private val children: List<ChildStatus>) :
-    RecyclerView.Adapter<ChildStatusAdapter.ViewHolder>() {
+class ChildStatusAdapter(
+    private val children: List<ChildStatus>,
+) : RecyclerView.Adapter<ChildStatusAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val nameTextView: TextView = itemView.findViewById(R.id.textChildName)

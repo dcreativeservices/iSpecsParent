@@ -1,4 +1,3 @@
-
 package com.ispecs.parent
 
 import android.app.DatePickerDialog
@@ -10,6 +9,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.firebase.database.FirebaseDatabase
 import com.ispecs.parent.databinding.ActivityDailyLogBinding
 import com.ispecs.parent.model.DailyLogEntry
@@ -62,7 +69,6 @@ class DailyLogActivity : AppCompatActivity() {
             return
         }
 
-        // 🔁 Fetch MAC address from Firebase
         FirebaseDatabase.getInstance().getReference("Children")
             .child(childId)
             .child("mac")
@@ -217,12 +223,14 @@ class DailyLogActivity : AppCompatActivity() {
         }
 
         logList.clear()
+        val barEntries = mutableListOf<BarEntry>()
+        val dateLabels = mutableListOf<String>()
+
         var fetchedDays = 0
         var totalActive = 0L
         var totalInactive = 0L
 
-        for (date in datesToFetch) {
-            Log.d("FIREBASE_PATH>>>>>>>>>>>>>>>>", "Path: logs/$parentId/$childMac/$date")
+        for ((index, date) in datesToFetch.withIndex()) {
             val dbRef = FirebaseDatabase.getInstance().getReference("logs").child(parentId).child(childMac).child(date)
 
             dbRef.get().addOnSuccessListener { snapshot ->
@@ -242,6 +250,7 @@ class DailyLogActivity : AppCompatActivity() {
                 var tempEnd: String? = null
                 var groupStartTime: Long? = null
                 var groupEndTime: Long? = null
+                var dailyActive = 0L
 
                 for (i in 0 until rawLogs.size - 1) {
                     val current = rawLogs[i]
@@ -264,6 +273,7 @@ class DailyLogActivity : AppCompatActivity() {
                         val duration = (groupEndTime ?: endDateTime.time) - (groupStartTime ?: startDateTime.time)
                         merged.add(DailyLogEntry(tempStart ?: "", tempEnd ?: "", formatDuration(duration), currentLabel, date))
                         if (currentLabel == "Active") totalActive += duration else totalInactive += duration
+                        if (currentLabel == "Active") dailyActive += duration
 
                         currentLabel = label
                         tempStart = current.time
@@ -277,9 +287,13 @@ class DailyLogActivity : AppCompatActivity() {
                     val totalDuration = groupEndTime - groupStartTime
                     merged.add(DailyLogEntry(tempStart, tempEnd, formatDuration(totalDuration), currentLabel, date))
                     if (currentLabel == "Active") totalActive += totalDuration else totalInactive += totalDuration
+                    if (currentLabel == "Active") dailyActive += totalDuration
                 }
 
                 logList.addAll(merged)
+                barEntries.add(BarEntry(index.toFloat(), (dailyActive / 60000f)))
+                dateLabels.add(date.substring(5))
+
                 fetchedDays++
 
                 if (fetchedDays == datesToFetch.size) {
@@ -290,6 +304,8 @@ class DailyLogActivity : AppCompatActivity() {
                     if (logList.isEmpty()) {
                         Toast.makeText(this, "No logs found for selected range", Toast.LENGTH_SHORT).show()
                     }
+
+                    showBarChart(barEntries, dateLabels)
                 }
             }.addOnFailureListener {
                 fetchedDays++
@@ -298,6 +314,37 @@ class DailyLogActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun showBarChart(entries: List<BarEntry>, labels: List<String>) {
+        val dataSet = BarDataSet(entries, "Wearing Duration (h m)").apply {
+            colors = ColorTemplate.MATERIAL_COLORS.toList()
+            valueTextColor = ContextCompat.getColor(this@DailyLogActivity, R.color.black)
+            valueTextSize = 12f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    val mins = value.toInt()
+                    val hrs = mins / 60
+                    val remMins = mins % 60
+                    return if (hrs > 0) "${hrs}h ${remMins}m" else "${remMins}m"
+                }
+            }
+        }
+
+        val barData = BarData(dataSet)
+        binding.logsBarChart.data = barData
+
+        binding.logsBarChart.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+            valueFormatter = IndexAxisValueFormatter(labels)
+            setDrawGridLines(false)
+            granularity = 1f
+            labelRotationAngle = -45f
+        }
+
+        binding.logsBarChart.axisRight.isEnabled = false
+        binding.logsBarChart.description = Description().apply { text = "Daily Wearing Time" }
+        binding.logsBarChart.invalidate()
     }
 
     private fun formatDuration(millis: Long): String {
