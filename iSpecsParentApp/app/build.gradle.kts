@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.ispecs.parent"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.ispecs.parent"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 7
         versionName = "1.8"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -48,6 +48,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    implementation("androidx.compose.ui:ui-graphics-android:1.8.3")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -58,4 +59,17 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+}
+
+configurations.all {
+    resolutionStrategy {
+        eachDependency {
+            if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-stdlib-common") {
+                useVersion("1.9.22")
+            }
+            if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-stdlib") {
+                useVersion("1.9.22")
+            }
+        }
+    }
 }
