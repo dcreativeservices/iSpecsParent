@@ -161,9 +161,12 @@ class RegisterActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 saveRegistrationInfoToPrefs(email, uid, parentId, name)
                 Toast.makeText(this, "Registration successful! Your Parent ID is $parentId", Toast.LENGTH_LONG).show()
-                startActivity(Intent(this, LoginActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                })
+                val intent = Intent(this, ChildConfigActivity::class.java).apply {
+                    putExtra("parentId", parentId)
+                    putExtra("parentName", name)
+                    putExtra("parentEmail", email)
+                }
+                startActivity(intent)
                 finish()
             } else {
                 unclaimParentIdAndDeleteAuthUser(parentId, "Failed to save parent data.")

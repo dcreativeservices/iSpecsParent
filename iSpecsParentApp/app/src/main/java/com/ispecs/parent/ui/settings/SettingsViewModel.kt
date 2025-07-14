@@ -53,7 +53,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun loadChildrenList(callback: (List<Pair<String, String>>) -> Unit) {
         val parent = _parentId.value ?: return
-        val childrenRef = database.child("Children")
+        val childrenRef = database
+            .child("Parent")
+            .child(parent)
+            .child("children")
 
         childrenRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -61,15 +64,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
                 for (child in snapshot.children) {
                     val id = child.key ?: continue
-                    val name = child.child("name").getValue(String::class.java) ?: "Unnamed"
-                    val parentIds = child.child("parent_ids")
+                    val firstName = child.child("childFirstName").getValue(String::class.java) ?: ""
+                    val lastName = child.child("childLastName").getValue(String::class.java) ?: ""
+                    val displayName = "$firstName $lastName".trim()
 
-                    val isLinkedToParent = parentIds.hasChild(parent) &&
-                            parentIds.child(parent).getValue(Boolean::class.java) == true
-
-                    if (isLinkedToParent) {
-                        children.add(id to name)
-                    }
+                    children.add(id to displayName)
                 }
 
                 callback(children)
@@ -82,6 +81,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         })
     }
 
+
+
+    private var childSettingsListener: ValueEventListener? = null
+
     fun loadSelectedChild(childId: String) {
         selectedChildId = childId
 
@@ -89,10 +92,35 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             .getSharedPreferences("MySharedPrefs", Context.MODE_PRIVATE)
         sharedPrefs.edit().putString("selectedChildId", childId).apply()
 
-        val childRef = database.child("Children").child(childId)
-        childRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        val firebaseAuthUid = FirebaseAuth.getInstance().currentUser?.uid
+        if (firebaseAuthUid.isNullOrEmpty()) {
+            Log.e("SettingsViewModel", "FirebaseAuth UID is null")
+            return
+        }
+
+        val childRef = database
+            .child("Parents")
+            .child(firebaseAuthUid)
+            .child("children")
+            .child(childId)
+
+        Log.d("SettingsViewModel", "Listening to child updates at: ${childRef.path}")
+
+        // Remove previous listener if any
+        childSettingsListener?.let { childRef.removeEventListener(it) }
+
+        childSettingsListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                _childName.value = snapshot.child("name").getValue(String::class.java) ?: ""
+                if (!snapshot.exists()) {
+                    Log.e("SettingsViewModel", "Child not found at ${childRef.path}")
+                    return
+                }
+
+                val firstName = snapshot.child("childFirstName").getValue(String::class.java) ?: ""
+                val lastName = snapshot.child("childLastName").getValue(String::class.java) ?: ""
+                val fullName = "$firstName $lastName".trim()
+                _childName.value = if (fullName.isNotBlank()) fullName else "---"
+
                 _blurIntensity.value = snapshot.child("blur_intensity").getValue(Int::class.java) ?: 80
                 _blurDelay.value = snapshot.child("blur_delay").getValue(Int::class.java) ?: 2
                 _fadeIn.value = snapshot.child("fade_in").getValue(Int::class.java) ?: 5
@@ -103,18 +131,41 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.e("SettingsViewModel", "Failed to load child settings", error.toException())
+                Log.e("SettingsViewModel", "Failed to listen to child settings", error.toException())
             }
-        })
+        }
+
+        childRef.addValueEventListener(childSettingsListener as ValueEventListener)
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        selectedChildId?.let { childId ->
+            val firebaseAuthUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+            val childRef = database.child("Parents").child(firebaseAuthUid).child("children").child(childId)
+            childSettingsListener?.let { childRef.removeEventListener(it) }
+        }
+    }
+
+
+
 
     fun updateChildSetting(key: String, value: Any) {
         val childId = selectedChildId ?: return
-        database.child("Children").child(childId).child(key).setValue(value)
+        val firebaseAuthUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        val updates = hashMapOf<String, Any>(
+            "/Parents/$firebaseAuthUid/children/$childId/$key" to value,
+            "/Children/$childId/$key" to value
+        )
+
+        database.updateChildren(updates)
             .addOnFailureListener {
                 Log.e("SettingsViewModel", "Failed to update $key", it)
             }
     }
+
+
 
     fun onLogoutClick() {
         val sharedPreferences = getApplication<Application>()

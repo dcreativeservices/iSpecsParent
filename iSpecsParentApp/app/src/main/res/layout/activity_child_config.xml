@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Toolbar with Back Button -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:title="Child Configuration"
+        android:titleTextColor="@android:color/white" />
+
+    <!-- Main Content Scrollable -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="24dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/editTextChildFirstName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Child First Name" />
+
+            <EditText
+                android:id="@+id/editTextChildLastName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Child Last Name"
+                android:layout_marginTop="12dp"/>
+
+            <EditText
+                android:id="@+id/editTextChildPasscode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Child Passcode (4 digits)"
+                android:inputType="numberPassword"
+                android:maxLength="4"
+                android:layout_marginTop="12dp"/>
+
+            <EditText
+                android:id="@+id/editTextViewTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Allowed screen time (minutes)"
+                android:inputType="number"
+                android:layout_marginTop="12dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerBlurType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"/>
+
+            <Button
+                android:id="@+id/saveConfigButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save Configuration"
+                android:layout_marginTop="24dp"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

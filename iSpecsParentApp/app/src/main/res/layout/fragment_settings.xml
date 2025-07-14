@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/settings_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -20,14 +21,14 @@
             <!-- Child Name Section -->
             <RelativeLayout
                 android:id="@+id/layoutChildName"
-                android:clickable="true"
-                android:focusable="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginRight="10dp"
-                android:padding="10dp">
+                android:padding="10dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <FrameLayout
                     android:id="@+id/child_name_icon"
@@ -46,502 +47,501 @@
                     android:id="@+id/child_name_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/child_name_icon"
+                    android:layout_marginLeft="10dp"
                     android:text="Child Name"
                     android:textColor="@color/black"
                     android:textSize="20sp"
-                    android:fontFamily="@font/roboto_regular"
-                    android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@id/child_name_icon" />
+                    android:fontFamily="@font/roboto_regular" />
 
                 <TextView
                     android:id="@+id/textViewChildName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="---"
-                    android:textColor="@color/primary"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/roboto_medium"
                     android:layout_below="@id/child_name_title"
                     android:layout_toRightOf="@id/child_name_icon"
                     android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp" />
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="10dp"
+                    android:text="---"
+                    android:textColor="@color/primary"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/roboto_medium" />
 
                 <TextView
                     android:id="@+id/textViewMacAddress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="MAC: --"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/roboto_regular"
                     android:layout_below="@id/textViewChildName"
                     android:layout_toRightOf="@id/child_name_icon"
                     android:layout_marginLeft="10dp"
                     android:layout_marginTop="2dp"
-                    android:layout_marginRight="10dp" />
+                    android:layout_marginRight="10dp"
+                    android:text="MAC: --"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/roboto_regular" />
 
-                <!-- ✅ iSpec Device Status -->
                 <TextView
                     android:id="@+id/textViewDeviceStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="iSpec Device Status: --"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/roboto_regular"
                     android:layout_below="@id/textViewMacAddress"
                     android:layout_toRightOf="@id/child_name_icon"
                     android:layout_marginLeft="10dp"
                     android:layout_marginTop="2dp"
-                    android:layout_marginRight="10dp" />
+                    android:layout_marginRight="10dp"
+                    android:text="iSpec Device Status: --"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/roboto_regular" />
 
-                <!-- ✅ NEW: iSpec Glasses Wearing Status -->
                 <TextView
                     android:id="@+id/textViewGlassesWearingStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="iSpec Glasses: --"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="14sp"
-                    android:fontFamily="@font/roboto_regular"
                     android:layout_below="@id/textViewDeviceStatus"
                     android:layout_toRightOf="@id/child_name_icon"
                     android:layout_marginLeft="10dp"
                     android:layout_marginTop="2dp"
-                    android:layout_marginRight="10dp" />
-
-                <ImageView
-                    android:id="@+id/right_arrow_child_name"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/chevron" />
-            </RelativeLayout>
-
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="10dp"
-                android:orientation="horizontal"
-                android:padding="10dp"
-                android:visibility="gone">
-
-                <FrameLayout
-                    android:id="@+id/profile_icon"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/circle_bg">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="10dp"
-                        android:src="@drawable/smartphone" />
-
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/screen_time_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/profile_icon"
-                    android:fontFamily="@font/roboto_medium"
-                    android:text="Profile"
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/screen_time_title"
-                    android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
-                    android:layout_toRightOf="@+id/profile_icon"
-                    android:fontFamily="@font/roboto_regular"
-                    android:text="View/update details"
+                    android:text="iSpec Glasses: --"
                     android:textColor="@color/dark_gray"
-                    android:textSize="16sp"
-
-                    />
+                    android:textSize="14sp"
+                    android:fontFamily="@font/roboto_regular" />
 
                 <ImageView
+                    android:id="@+id/imageViewChildDropdown"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/chevron" />
-
             </RelativeLayout>
-            <RelativeLayout
-                android:id="@+id/layoutChildPasscode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="10dp"
-                android:orientation="horizontal"
-                android:padding="10dp">
 
-                <FrameLayout
-                    android:id="@+id/blur_icon2"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/circle_bg">
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="50dp"
+                    android:background="@color/gray_bg" />
 
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="10dp"
-                        android:src="@drawable/smartphone" />
-
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/logs_title"
-                    android:layout_width="wrap_content"
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/blur_icon2"
-                    android:fontFamily="@font/roboto_regular"
-                    android:text="Child App Passcode"
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/textViewChildPasscode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/logs_title"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="20dp"
                     android:layout_marginRight="10dp"
-                    android:layout_toRightOf="@+id/blur_icon2"
-                    android:fontFamily="@font/roboto_medium"
-                    android:text="---"
-                    android:textColor="@color/primary"
-                    android:textSize="16sp"
+                    android:orientation="horizontal"
+                    android:padding="10dp"
+                    android:visibility="gone">
 
-                    />
+                    <FrameLayout
+                        android:id="@+id/profile_icon"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/circle_bg">
 
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/chevron" />
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp"
+                            android:src="@drawable/smartphone" />
 
-            </RelativeLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
+                    </FrameLayout>
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="10dp"
-                android:orientation="horizontal"
-                android:padding="10dp">
+                    <TextView
+                        android:id="@+id/screen_time_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/profile_icon"
+                        android:fontFamily="@font/roboto_medium"
+                        android:text="Profile"
+                        android:textColor="@color/black"
+                        android:textSize="20sp" />
 
-                <FrameLayout
-                    android:id="@+id/blur_icon3"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/circle_bg">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/screen_time_title"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_toRightOf="@+id/profile_icon"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="View/update details"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="16sp"
+
+                        />
 
                     <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="10dp"
-                        android:src="@drawable/smartphone" />
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/chevron" />
 
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/child_app_status_title"
-                    android:layout_width="wrap_content"
+                </RelativeLayout>
+                <RelativeLayout
+                    android:id="@+id/layoutChildPasscode"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/blur_icon3"
-                    android:fontFamily="@font/roboto_regular"
-                    android:text="Parent ID"
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/parentIDTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/child_app_status_title"
-                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="20dp"
                     android:layout_marginRight="10dp"
-                    android:layout_toRightOf="@+id/blur_icon3"
-                    android:fontFamily="@font/roboto_medium"
-                    android:text="1111"
-                    android:textColor="@color/primary"
-                    android:textSize="16sp" />
+                    android:orientation="horizontal"
+                    android:padding="10dp">
 
-            </RelativeLayout>
+                    <FrameLayout
+                        android:id="@+id/blur_icon2"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/circle_bg">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp"
+                            android:src="@drawable/smartphone" />
 
+                    </FrameLayout>
 
-            <RelativeLayout
-                android:id="@+id/setBlurIntensityLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="10dp"
-                android:orientation="horizontal"
-                android:padding="10dp">
+                    <TextView
+                        android:id="@+id/logs_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/blur_icon2"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="Child App Passcode"
+                        android:textColor="@color/black"
+                        android:textSize="20sp" />
 
-                <FrameLayout
-                    android:id="@+id/blur_icon"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/circle_bg">
+                    <TextView
+                        android:id="@+id/textViewChildPasscode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/logs_title"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_toRightOf="@+id/blur_icon2"
+                        android:fontFamily="@font/roboto_medium"
+                        android:text="---"
+                        android:textColor="@color/primary"
+                        android:textSize="16sp"
+
+                        />
 
                     <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="10dp"
-                        android:src="@drawable/blur" />
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/chevron" />
 
-                </FrameLayout>
+                </RelativeLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="50dp"
+                    android:background="@color/gray_bg" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/blur_icon"
-                    android:fontFamily="@font/roboto_regular"
-                    android:text="Blur Intensity"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/textViewBlurIntensity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
+                    android:layout_marginTop="20dp"
                     android:layout_marginRight="10dp"
-                    android:layout_toLeftOf="@+id/right_arrow"
-                    android:fontFamily="@font/roboto_medium"
-                    android:text=""
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
+                    android:orientation="horizontal"
+                    android:padding="10dp">
 
-                <ImageView
-                    android:id="@+id/right_arrow"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/chevron" />
+                    <FrameLayout
+                        android:id="@+id/blur_icon3"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/circle_bg">
 
-            </RelativeLayout>
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp"
+                            android:src="@drawable/smartphone" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
+                    </FrameLayout>
 
-            <RelativeLayout
-                android:id="@+id/setBlurDelayLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="10dp"
-                android:orientation="horizontal"
-                android:padding="10dp">
+                    <TextView
+                        android:id="@+id/child_app_status_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/blur_icon3"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="Parent ID"
+                        android:textColor="@color/black"
+                        android:textSize="20sp" />
 
-                <FrameLayout
-                    android:id="@+id/blur_delay_icon"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/circle_bg">
+                    <TextView
+                        android:id="@+id/parentIDTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/child_app_status_title"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_toRightOf="@+id/blur_icon3"
+                        android:fontFamily="@font/roboto_medium"
+                        android:text="1111"
+                        android:textColor="@color/primary"
+                        android:textSize="16sp" />
 
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="10dp"
-                        android:src="@drawable/hourglass" />
+                </RelativeLayout>
 
-                </FrameLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="50dp"
+                    android:background="@color/gray_bg" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+
+                <RelativeLayout
+                    android:id="@+id/setBlurIntensityLayout"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/blur_delay_icon"
-                    android:fontFamily="@font/roboto_regular"
-                    android:text="Blur Delay"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/textViewBlurDelay"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
+                    android:layout_marginTop="20dp"
                     android:layout_marginRight="10dp"
-                    android:layout_toLeftOf="@+id/right_arrow2"
-                    android:fontFamily="@font/roboto_medium"
-                    android:text=""
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
+                    android:orientation="horizontal"
+                    android:padding="10dp">
 
-                <ImageView
-                    android:id="@+id/right_arrow2"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/chevron" />
+                    <FrameLayout
+                        android:id="@+id/blur_icon"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/circle_bg">
 
-            </RelativeLayout>
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp"
+                            android:src="@drawable/blur" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
+                    </FrameLayout>
 
-            <RelativeLayout
-                android:id="@+id/setFadeInLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="10dp"
-                android:orientation="horizontal"
-                android:padding="10dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/blur_icon"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="Blur Intensity"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="20sp" />
 
-                <FrameLayout
-                    android:id="@+id/fade_icon"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/circle_bg">
+                    <TextView
+                        android:id="@+id/textViewBlurIntensity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginRight="10dp"
+                        android:layout_toLeftOf="@+id/right_arrow"
+                        android:fontFamily="@font/roboto_medium"
+                        android:text=""
+                        android:textColor="@color/black"
+                        android:textSize="20sp" />
 
                     <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="15dp"
-                        android:src="@drawable/fade_in" />
+                        android:id="@+id/right_arrow"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/chevron" />
 
-                </FrameLayout>
+                </RelativeLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="50dp"
+                    android:background="@color/gray_bg" />
+
+                <RelativeLayout
+                    android:id="@+id/setBlurDelayLayout"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/fade_icon"
-                    android:fontFamily="@font/roboto_regular"
-                    android:text="Fade In"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/textViewFadeIn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
+                    android:layout_marginTop="20dp"
                     android:layout_marginRight="10dp"
-                    android:layout_toLeftOf="@+id/right_arrow3"
-                    android:fontFamily="@font/roboto_medium"
-                    android:text=""
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
+                    android:orientation="horizontal"
+                    android:padding="10dp">
 
-                <ImageView
-                    android:id="@+id/right_arrow3"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/chevron" />
+                    <FrameLayout
+                        android:id="@+id/blur_delay_icon"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/circle_bg">
 
-            </RelativeLayout>
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp"
+                            android:src="@drawable/hourglass" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
+                    </FrameLayout>
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="10dp"
-                android:orientation="horizontal"
-                android:padding="10dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/blur_delay_icon"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="Blur Delay"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="20sp" />
 
-                <FrameLayout
-                    android:id="@+id/mute_icon"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/circle_bg">
+                    <TextView
+                        android:id="@+id/textViewBlurDelay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginRight="10dp"
+                        android:layout_toLeftOf="@+id/right_arrow2"
+                        android:fontFamily="@font/roboto_medium"
+                        android:text=""
+                        android:textColor="@color/black"
+                        android:textSize="20sp" />
 
                     <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="12dp"
-                        android:src="@drawable/mute" />
+                        android:id="@+id/right_arrow2"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/chevron" />
 
-                </FrameLayout>
+                </RelativeLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="50dp"
+                    android:background="@color/gray_bg" />
+
+                <RelativeLayout
+                    android:id="@+id/setFadeInLayout"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/mute_icon"
-                    android:fontFamily="@font/roboto_regular"
-                    android:text="Mute on Blur"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="20sp" />
+                    android:layout_marginTop="20dp"
+                    android:layout_marginRight="10dp"
+                    android:orientation="horizontal"
+                    android:padding="10dp">
 
+                    <FrameLayout
+                        android:id="@+id/fade_icon"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/circle_bg">
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/muteSwitch"
-                    android:layout_width="wrap_content"
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="15dp"
+                            android:src="@drawable/fade_in" />
+
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/fade_icon"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="Fade In"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/textViewFadeIn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginRight="10dp"
+                        android:layout_toLeftOf="@+id/right_arrow3"
+                        android:fontFamily="@font/roboto_medium"
+                        android:text=""
+                        android:textColor="@color/black"
+                        android:textSize="20sp" />
+
+                    <ImageView
+                        android:id="@+id/right_arrow3"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/chevron" />
+
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="50dp"
+                    android:background="@color/gray_bg" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="20dp" />
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginRight="10dp"
+                    android:orientation="horizontal"
+                    android:padding="10dp">
 
-            </RelativeLayout>
+                    <FrameLayout
+                        android:id="@+id/mute_icon"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/circle_bg">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginLeft="50dp"
-                android:background="@color/gray_bg" />
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="12dp"
+                            android:src="@drawable/mute" />
+
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/mute_icon"
+                        android:fontFamily="@font/roboto_regular"
+                        android:text="Mute on Blur"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="20sp" />
+
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/muteSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginRight="20dp" />
+
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="50dp"
+                    android:background="@color/gray_bg" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -549,7 +549,6 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginRight="10dp"
-                android:orientation="horizontal"
                 android:padding="10dp">
 
                 <FrameLayout
@@ -563,7 +562,6 @@
                         android:layout_height="match_parent"
                         android:padding="10dp"
                         android:src="@drawable/smartphone" />
-
                 </FrameLayout>
 
                 <TextView
@@ -572,15 +570,23 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/blur_icon4"
+                    android:layout_toRightOf="@id/blur_icon4"
                     android:fontFamily="@font/roboto_regular"
                     android:text="Logout"
                     android:textColor="@color/black"
                     android:textSize="20sp" />
 
-
+                <Button
+                    android:id="@+id/btnAddChild"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add Child"
+                    android:layout_below="@id/blur_icon4"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="16dp" />
             </RelativeLayout>
-        </LinearLayout>
-    </ScrollView>
 
-</LinearLayout>
+        </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>

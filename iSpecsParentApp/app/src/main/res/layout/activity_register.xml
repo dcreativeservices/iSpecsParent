@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,7 +7,6 @@
     android:background="@color/gray_bg"
     tools:context=".RegisterActivity">
 
-    <!-- Fixed Toolbar at the top -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -19,9 +17,7 @@
         app:titleTextColor="@android:color/white"
         android:layout_alignParentTop="true" />
 
-    <!-- Scrollable content below toolbar -->
     <ScrollView
-        android:id="@+id/scrollContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar"
@@ -36,7 +32,6 @@
             android:paddingTop="24dp"
             android:paddingBottom="32dp">
 
-            <!-- App Logo -->
             <ImageView
                 android:id="@+id/ispecsLogo"
                 android:layout_width="250dp"
@@ -49,94 +44,72 @@
                 android:layout_gravity="start"
                 android:contentDescription="@string/app_logo" />
 
-            <!-- Name -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Name"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:fontFamily="@font/roboto_regular"
                 android:layout_marginTop="16dp" />
 
             <EditText
                 android:id="@+id/editTextName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/rounded_edittext"
                 android:hint="Enter name"
                 android:inputType="textPersonName"
-                android:imeOptions="actionNext"
                 android:padding="12dp"
                 android:minHeight="48dp"
                 android:textSize="16sp"
-                android:maxLength="40"
-                android:fontFamily="@font/roboto_regular"
                 android:layout_marginTop="8dp" />
 
-            <!-- Email -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Email"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:fontFamily="@font/roboto_regular"
                 android:layout_marginTop="20dp" />
 
             <EditText
                 android:id="@+id/editTextEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/rounded_edittext"
                 android:hint="Enter email"
                 android:inputType="textEmailAddress"
-                android:imeOptions="actionNext"
                 android:padding="12dp"
                 android:minHeight="48dp"
                 android:textSize="16sp"
-                android:maxLength="100"
-                android:fontFamily="@font/roboto_regular"
                 android:layout_marginTop="8dp" />
 
-            <!-- Password -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Password"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:fontFamily="@font/roboto_regular"
                 android:layout_marginTop="20dp" />
 
             <EditText
                 android:id="@+id/editTextPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/rounded_edittext"
                 android:hint="Enter password"
                 android:inputType="textPassword"
-                android:imeOptions="actionDone"
                 android:padding="12dp"
                 android:minHeight="48dp"
                 android:textSize="16sp"
-                android:maxLength="20"
-                android:fontFamily="@font/roboto_regular"
                 android:layout_marginTop="8dp" />
 
-            <!-- Register Button -->
             <Button
                 android:id="@+id/register_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"
                 android:layout_marginTop="30dp"
-                android:background="@drawable/rounded_button"
-                android:fontFamily="@font/roboto_regular"
                 android:text="REGISTER PARENT"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/primary" />
-
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>
